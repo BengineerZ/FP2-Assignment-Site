@@ -4,3 +4,13 @@
     margin-top: 100px;
     margin-bottom: 500px;
 }
+
+#chart-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%; /* Adjust as needed */
+    height: 100%; /* Adjust as needed */
+    border: 1px solid #ccc; /* Optional: for visual reference */
+    margin: 20px auto; /* Optional: center the container itself */
+}
