@@ -1,0 +1,29 @@
+.dot-sidebar {
+    position: fixed;
+    top: 50%;
+    right: 100px;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 1000;
+  }
+  
+  .dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: #ccc;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .dot:hover {
+    background-color: #bbb;
+  }
+  
+  .dot.active {
+    background-color: #007BFF;
+    transform: scale(1.25);
+  }

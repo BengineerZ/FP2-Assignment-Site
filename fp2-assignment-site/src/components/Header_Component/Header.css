@@ -1,0 +1,20 @@
+.header {
+    padding: 10px 20px;
+    text-align: center;
+    margin-top: 100px;
+    margin-bottom: 800px;
+  }
+  
+.house {
+    width: 150px;
+    height: auto;
+    /* fill: #2273f3; changes the color if SVG uses `fill="currentColor"` */
+  }
+
+.house .primary {
+  fill: #2273f3;
+}
+
+.house .secondary {
+  fill: #2273f3;
+}
