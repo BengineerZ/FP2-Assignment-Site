@@ -233,12 +233,10 @@ function FlowChart({ csvUrl = "/boston_residential_sales_dummy.csv" }) {
       }
       
       // Add new bubbles if still needed
-      for (let i = 0; i < addInv; i++) {
-        newBubs.push(createBubble('investor', currentTime));
-      }
-      
-      for (let i = 0; i < addNonInv; i++) {
-        newBubs.push(createBubble('noninvestor', currentTime));
+      for (let i = 0; i < addInv + addNonInv; i++) {
+        const type = Math.random() < 0.5 ? 'investor' : 'noninvestor';
+        newBubs.push(createBubble(type, currentTime));
+        if (i == 0) break;
       }
 
       return newBubs;
@@ -255,7 +253,7 @@ function FlowChart({ csvUrl = "/boston_residential_sales_dummy.csv" }) {
       birthTime,
       // Spawn at (150, 400)
       x: 150,
-      y: 400
+      y: 300
     };
   }
 
@@ -446,7 +444,7 @@ function FlowChart({ csvUrl = "/boston_residential_sales_dummy.csv" }) {
           textAnchor="start" 
           dominantBaseline="middle"
           fontWeight="bold"
-          fill="blue"
+          fill="#2273f3"
         >
           Investor
         </text>
@@ -461,7 +459,7 @@ function FlowChart({ csvUrl = "/boston_residential_sales_dummy.csv" }) {
               cy={b.y}
               r={BUBBLE_RADIUS}
               opacity={opacity}
-              fill={b.type === 'investor' ? 'blue' : 'green'}
+              fill={b.type === 'investor' ? '#2273f3' : 'green'}
             />
           );
         })}
