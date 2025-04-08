@@ -638,71 +638,7 @@ function FlowChart({ csvUrl = "/mapc_region_residential_sales_clean_aggregated.c
           {Math.round(currentTime) === 1999 ? 2000 : Math.round(currentTime)}
         </text>
 
-        {/* House emoji at spawning point with hover effect */}
-        <g>
-          <text
-            x={SPAWN_X}
-            y={SPAWN_Y}
-            textAnchor="middle"
-            dominantBaseline="middle"
-            fontSize="120px"
-            opacity={0.8}
-            style={{ 
-              fontFamily: 'Segoe UI Emoji, Apple Color Emoji, Noto Color Emoji, sans-serif',
-              cursor: 'pointer'
-            }}
-            onMouseEnter={() => setHoverState(prev => ({ ...prev, house: true }))}
-            onMouseLeave={() => setHoverState(prev => ({ ...prev, house: false }))}
-          >
-            🏠
-          </text>
-          
-          {/* House price display on hover - updated text */}
-          <text
-            x={SPAWN_X}
-            y={SPAWN_Y - 120} 
-            textAnchor="middle"
-            dominantBaseline="middle"
-            fontFamily="Helvetica Neue"
-            fontWeight="bold"
-            fontSize="22px"
-            fill="#333"
-            opacity={hoverState.house ? 1 : 0}
-            pointerEvents="none"
-          >
-            Boston Home Price Index ({Math.round(currentTime)}):
-          </text>
-          <text
-            x={SPAWN_X}
-            y={SPAWN_Y - 90} 
-            textAnchor="middle"
-            dominantBaseline="middle"
-            fontFamily="Helvetica Neue"
-            fontWeight="bold"
-            fontSize="24px"
-            fill="#1A6692"
-            opacity={hoverState.house ? 1 : 0}
-            pointerEvents="none"
-          >
-            {getHomePrice().toLocaleString()}
-          </text>
-          
-          {/* Label under house */}
-          <text
-            x={SPAWN_X}
-            y={SPAWN_Y + 80} 
-            textAnchor="middle"
-            dominantBaseline="middle"
-            fontFamily="Helvetica Neue"
-            fontWeight="bold"
-            fontSize="24px"
-            fill="#333"
-          >
-            Average Profit Per Sale
-          </text>
-        </g>
-
-        {/* Money bubbles - moved above the cluster circles so they appear behind */}
+        {/* Money bubbles - moved BEFORE the house so they appear BEHIND */}
         {bubbles.map((b) => {
           const opacity = getOpacity(b);
           if (opacity <= 0) return null;
@@ -819,6 +755,70 @@ function FlowChart({ csvUrl = "/mapc_region_residential_sales_clean_aggregated.c
         >
           Investor Average
         </text>
+
+        {/* House emoji at spawning point with hover effect - moved AFTER money bubbles so it appears ON TOP */}
+        <g>
+          <text
+            x={SPAWN_X}
+            y={SPAWN_Y}
+            textAnchor="middle"
+            dominantBaseline="middle"
+            fontSize="120px"
+            opacity={0.8}
+            style={{ 
+              fontFamily: 'Segoe UI Emoji, Apple Color Emoji, Noto Color Emoji, sans-serif',
+              cursor: 'pointer'
+            }}
+            onMouseEnter={() => setHoverState(prev => ({ ...prev, house: true }))}
+            onMouseLeave={() => setHoverState(prev => ({ ...prev, house: false }))}
+          >
+            🏠
+          </text>
+          
+          {/* House price display on hover - updated text */}
+          <text
+            x={SPAWN_X}
+            y={SPAWN_Y - 120} 
+            textAnchor="middle"
+            dominantBaseline="middle"
+            fontFamily="Helvetica Neue"
+            fontWeight="bold"
+            fontSize="22px"
+            fill="#333"
+            opacity={hoverState.house ? 1 : 0}
+            pointerEvents="none"
+          >
+            Boston Home Price Index ({Math.round(currentTime)}):
+          </text>
+          <text
+            x={SPAWN_X}
+            y={SPAWN_Y - 90} 
+            textAnchor="middle"
+            dominantBaseline="middle"
+            fontFamily="Helvetica Neue"
+            fontWeight="bold"
+            fontSize="24px"
+            fill="#1A6692"
+            opacity={hoverState.house ? 1 : 0}
+            pointerEvents="none"
+          >
+            {getHomePrice().toLocaleString()}
+          </text>
+          
+          {/* Label under house */}
+          <text
+            x={SPAWN_X}
+            y={SPAWN_Y + 80} 
+            textAnchor="middle"
+            dominantBaseline="middle"
+            fontFamily="Helvetica Neue"
+            fontWeight="bold"
+            fontSize="24px"
+            fill="#333"
+          >
+            Average Profit Per Sale
+          </text>
+        </g>
       </svg>
     </div>
   );
