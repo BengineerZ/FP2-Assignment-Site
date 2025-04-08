@@ -24,6 +24,7 @@ function FlowChart({ csvUrl = "/boston_residential_sales_dummy.csv" }) {
   const COLLISION_RADIUS = 12 ;    
   const BUBBLE_RADIUS = 10;        
   const ANIMATION_SPEED = 0.01;   // Years per animation frame (higher = faster)
+  const DOLLAR_SIGN_SIZE = "20px";
 
   // “Cluster” for investor vs. non-investor
   function clusterX(d) {
@@ -53,6 +54,12 @@ function FlowChart({ csvUrl = "/boston_residential_sales_dummy.csv" }) {
   // Force simulation reference
   const simulationRef = useRef(null);
 
+  // New state to track scheduled bubble births
+  const [scheduledBubbles, setScheduledBubbles] = useState({
+    investor: [],
+    noninvestor: []
+  });
+
   // -----------------------------------------------------------
   // 3) Load CSV
   // -----------------------------------------------------------
@@ -72,7 +79,8 @@ function FlowChart({ csvUrl = "/boston_residential_sales_dummy.csv" }) {
 
       setMinYear(minY);
       setMaxYear(maxY);
-      setCurrentTime(minY); // start slider at earliest year
+      // Start at year 2000 (which is data year 2000)
+      setCurrentTime(2000); 
     });
   }, [csvUrl]);
 
@@ -172,88 +180,166 @@ function FlowChart({ csvUrl = "/boston_residential_sales_dummy.csv" }) {
     };
   }
 
+  // New function to schedule bubble births
+  function scheduleBubbleBirths(csvData) {
+    if (!csvData || csvData.length < 2) return;
+
+    const invSchedule = [];
+    const nonInvSchedule = [];
+    
+    // For each time period in the data
+    for (let i = 0; i < csvData.length - 1; i++) {
+      const startYear = csvData[i].year;
+      const endYear = csvData[i+1].year;
+      const yearSpan = endYear - startYear;
+      
+      // Calculate bubbles needed for each period based on interpolated profits
+      for (let fraction = 0; fraction < 1.0; fraction += 0.01) { // Step through the period
+        const timePoint = startYear + (yearSpan * fraction);
+        const nextTimePoint = timePoint + 0.01 * yearSpan;
+        
+        // Get interpolated profit at current and next time points
+        const currentProfit = getInterpolatedProfits(timePoint);
+        const nextProfit = getInterpolatedProfits(nextTimePoint);
+        
+        // Calculate bubble counts at each point
+        const currentInvBubbles = Math.floor(currentProfit.inv / BUBBLE_VALUE);
+        const nextInvBubbles = Math.floor(nextProfit.inv / BUBBLE_VALUE);
+        const currentNonInvBubbles = Math.floor(currentProfit.noninv / BUBBLE_VALUE);
+        const nextNonInvBubbles = Math.floor(nextProfit.noninv / BUBBLE_VALUE);
+        
+        // Calculate net new bubbles needed
+        const newInvBubbles = nextInvBubbles - currentInvBubbles;
+        const newNonInvBubbles = nextNonInvBubbles - currentNonInvBubbles;
+        
+        // Also calculate how many bubbles will despawn in this interval
+        const despawningInv = invSchedule.filter(time => 
+          time + LIFE_SPAN_YEARS >= timePoint && 
+          time + LIFE_SPAN_YEARS < nextTimePoint
+        ).length;
+        
+        const despawningNonInv = nonInvSchedule.filter(time => 
+          time + LIFE_SPAN_YEARS >= timePoint && 
+          time + LIFE_SPAN_YEARS < nextTimePoint
+        ).length;
+        
+        // Add new bubbles needed + replacement for despawning ones
+        const totalNewInv = Math.max(0, newInvBubbles + despawningInv);
+        const totalNewNonInv = Math.max(0, newNonInvBubbles + despawningNonInv);
+        
+        // Schedule new bubbles evenly across this small interval
+        if (totalNewInv > 0) {
+          const spacing = (0.01 * yearSpan) / totalNewInv;
+          for (let j = 0; j < totalNewInv; j++) {
+            invSchedule.push(timePoint + j * spacing);
+          }
+        }
+        
+        if (totalNewNonInv > 0) {
+          const spacing = (0.01 * yearSpan) / totalNewNonInv;
+          for (let j = 0; j < totalNewNonInv; j++) {
+            nonInvSchedule.push(timePoint + j * spacing);
+          }
+        }
+      }
+    }
+    
+    // Handle initial bubbles for the first data point
+    const initialTime = csvData[0].year;
+    const initialProfits = getInterpolatedProfits(initialTime);
+    
+    const initialInvCount = Math.floor(initialProfits.inv / BUBBLE_VALUE);
+    const initialNonInvCount = Math.floor(initialProfits.noninv / BUBBLE_VALUE);
+    
+    // Add initial bubbles slightly before start time (distributed over 0.5 years)
+    if (initialInvCount > 0) {
+      const spacing = 0.5 / initialInvCount;
+      for (let i = 0; i < initialInvCount; i++) {
+        invSchedule.push(initialTime - 0.5 + (i * spacing));
+      }
+    }
+    
+    if (initialNonInvCount > 0) {
+      const spacing = 0.5 / initialNonInvCount;
+      for (let i = 0; i < initialNonInvCount; i++) {
+        nonInvSchedule.push(initialTime - 0.5 + (i * spacing));
+      }
+    }
+    
+    setScheduledBubbles({
+      investor: invSchedule.sort((a, b) => a - b),
+      noninvestor: nonInvSchedule.sort((a, b) => a - b)
+    });
+  }
+  
+  // Schedule bubble births after CSV data is loaded
+  useEffect(() => {
+    if (csvData.length > 0 && minYear !== undefined && maxYear !== undefined) {
+      scheduleBubbleBirths(csvData);
+    }
+  }, [csvData, minYear, maxYear]);
+
   // -----------------------------------------------------------
   // 5) When slider changes => spawn/fade bubbles
   // -----------------------------------------------------------
   useEffect(() => {
-    if (!csvData.length || currentTime == null) return;
+    if (!csvData.length || currentTime == null || 
+        !scheduledBubbles.investor.length) return;
 
-    const { inv, noninv } = getInterpolatedProfits(currentTime);
-    const invCount = Math.floor(inv / BUBBLE_VALUE);
-    const noninvCount = Math.floor(noninv / BUBBLE_VALUE);
-
+    // Update bubbles based on scheduled births
     setBubbles(prevBubs => {
-      // Create a deep copy to avoid modifying objects directly
-      const newBubs = prevBubs.map(b => ({...b}));
-      
-      // Collect existing bubbles by type
-      const invBubbles = newBubs.filter(b => b.type === 'investor');
-      const nonInvBubbles = newBubs.filter(b => b.type === 'noninvestor');
-      
-      // Find bubbles from "future" we can repurpose when moving backward
-      const futureBubbles = {
-        investor: invBubbles.filter(b => b.birthTime > currentTime),
-        noninvestor: nonInvBubbles.filter(b => b.birthTime > currentTime)
-      };
-      
-      // Find bubbles that are currently alive
-      const isAliveNow = b => {
+      // Create a copy of the existing bubbles
+      const newBubs = prevBubs.filter(b => {
+        // Keep all bubbles that either:
+        // 1. Haven't been born yet (we'll use them for recycling)
+        // 2. Are currently alive (birthTime <= currentTime && age <= LIFE_SPAN_YEARS)
         const age = currentTime - b.birthTime;
-        return (age >= 0 && age <= LIFE_SPAN_YEARS);
-      };
+        return b.birthTime > currentTime || (age >= 0 && age <= LIFE_SPAN_YEARS);
+      }).map(b => ({...b}));
       
-      const invAliveCount = invBubbles.filter(isAliveNow).length;
-      const nonInvAliveCount = nonInvBubbles.filter(isAliveNow).length;
+      // For each type, find which bubbles should be active now
+      ['investor', 'noninvestor'].forEach(type => {
+        // Get relevant scheduled birthtimes and existing bubbles
+        const scheduledTimes = scheduledBubbles[type];
+        const existingBubbles = newBubs.filter(b => b.type === type);
+        
+        // Filter for bubbles that should be born by now but aren't dead yet
+        const shouldExist = scheduledTimes.filter(time => 
+          time <= currentTime && // Born by now
+          (currentTime - time) <= LIFE_SPAN_YEARS // Not dead yet
+        );
+        
+        // Get existing birth times
+        const existingBirthTimes = existingBubbles
+          .filter(b => b.birthTime <= currentTime) // Only consider born bubbles
+          .map(b => b.birthTime);
+        
+        // Find birthtimes that don't have bubbles yet
+        const missingBirthTimes = shouldExist.filter(
+          time => !existingBirthTimes.includes(time)
+        );
+        
+        // Create bubbles for missing birthtimes
+        missingBirthTimes.forEach(birthTime => {
+          // First try to recycle a future bubble
+          const futureBubble = existingBubbles.find(b => b.birthTime > currentTime);
+          
+          if (futureBubble) {
+            // Recycle by changing its birthtime
+            futureBubble.birthTime = birthTime;
+            // Reset position for recycled bubble
+            futureBubble.x = 150;
+            futureBubble.y = 300;
+          } else {
+            // Create a brand new bubble
+            newBubs.push(createBubble(type, birthTime));
+          }
+        });
+      });
       
-      // Calculate how many new bubbles we need to add
-      let addInv = invCount - invAliveCount;
-      let addNonInv = noninvCount - nonInvAliveCount;
-      
-      // Recycle future bubbles by resetting their birthTime
-      if (addInv > 0 && futureBubbles.investor.length > 0) {
-        const toRecycle = Math.min(addInv, futureBubbles.investor.length);
-        for (let i = 0; i < toRecycle; i++) {
-          futureBubbles.investor[i].birthTime = currentTime;
-          // Reset position for recycled bubbles
-          futureBubbles.investor[i].x = 150;
-          futureBubbles.investor[i].y = 300;
-        }
-        addInv -= toRecycle;
-      }
-      
-      if (addNonInv > 0 && futureBubbles.noninvestor.length > 0) {
-        const toRecycle = Math.min(addNonInv, futureBubbles.noninvestor.length);
-        for (let i = 0; i < toRecycle; i++) {
-          futureBubbles.noninvestor[i].birthTime = currentTime;
-          // Reset position for recycled bubbles
-          futureBubbles.noninvestor[i].x = 150;
-          futureBubbles.noninvestor[i].y = 300;
-        }
-        addNonInv -= toRecycle;
-      }
-      
-      // Add new bubbles if still needed
-      const newBubbles = [];
-      for (let i = 0; i < addInv; i++) {
-        newBubbles.push(createBubble('investor', currentTime));
-        if (i== 1) break;
-      }
-      for (let i = 0; i < addNonInv; i++) {
-        newBubbles.push(createBubble('noninvestor', currentTime));
-        if (i== 1) break;
-      }
-
-      // Shuffle the new bubbles to add them in random order
-      for (let i = newBubbles.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [newBubbles[i], newBubbles[j]] = [newBubbles[j], newBubbles[i]];
-      }
-
-      newBubbles.forEach(bubble => newBubs.push(bubble));
-
       return newBubs;
     });
-  }, [currentTime, csvData]);
+  }, [currentTime, scheduledBubbles]);
 
   // -----------------------------------------------------------
   // 6) Create a single bubble
@@ -363,11 +449,14 @@ function FlowChart({ csvUrl = "/boston_residential_sales_dummy.csv" }) {
     return <div>Loading CSV data or initializing...</div>;
   }
 
-  // Generate year marks for slider (2000-2010)
+  // Generate year marks for slider - start from 2000
   const yearMarks = [];
-  for (let year = 2000; year <= 2022; year++) {
+  for (let year = 2000; year <= 2021; year++) {
     yearMarks.push(year);
   }
+
+  // Get the visible min year (2000) for the slider
+  const visibleMinYear = 2000;
 
   return (
     <div>
@@ -377,21 +466,21 @@ function FlowChart({ csvUrl = "/boston_residential_sales_dummy.csv" }) {
       <div style={{ marginBottom: '1rem' }}>
         <input
           type="range"
-          min={minYear}
+          min={visibleMinYear} // Use 2000 as minimum visible year
           max={maxYear}
           step={0.01}
-          value={currentTime}
+          value={Math.max(currentTime, visibleMinYear)} // Ensure value is never below 2000
           onChange={(e) => setCurrentTime(+e.target.value)}
           style={{ width: '400px' }}
           list="year-marks"
         />
         <datalist id="year-marks">
           {yearMarks.map(year => (
-            <option key={year} value={year} />
+            <option key={year} value={year + 0.5} />
           ))}
         </datalist>
         <span style={{ marginLeft: '0.5rem' }}>
-          Year: {Math.round(currentTime)}
+          Year: {Math.round(currentTime) === 1999 ? 2000 : Math.round(currentTime)}
         </span>
         
         {/* Play/Pause button for autoscroll */}
@@ -414,7 +503,7 @@ function FlowChart({ csvUrl = "/boston_residential_sales_dummy.csv" }) {
         <button 
           onClick={() => {
             stopAnimation();
-            setCurrentTime(minYear);
+            setCurrentTime(visibleMinYear); // Reset to 2000 instead of minYear
           }}
           style={{ 
             marginLeft: '0.5rem',
@@ -465,14 +554,27 @@ function FlowChart({ csvUrl = "/boston_residential_sales_dummy.csv" }) {
           const opacity = getOpacity(b);
           if (opacity <= 0) return null;
           return (
-            <circle
-              key={b.id}
-              cx={b.x}
-              cy={b.y}
-              r={BUBBLE_RADIUS}
-              opacity={opacity}
-              fill={b.type === 'investor' ? '#2273f3' : 'red'}
-            />
+            <React.Fragment key={b.id}>
+              <circle
+                cx={b.x}
+                cy={b.y}
+                r={BUBBLE_RADIUS}
+                opacity={opacity}
+                fill={b.type === 'investor' ? '#2273f3' : 'red'}
+              />
+              <text
+                x={b.x}
+                y={b.y}
+                textAnchor="middle"
+                dominantBaseline="central"
+                fill="white"
+                fontSize={DOLLAR_SIGN_SIZE}
+                fontWeight="bold"
+                opacity={opacity}
+              >
+                $
+              </text>
+            </React.Fragment>
           );
         })}
       </svg>
