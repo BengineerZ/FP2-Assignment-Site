@@ -14,7 +14,7 @@ import * as d3 from 'd3';
  * - Bubbles fade in/out over ~1 year of slider time (same logic as before).
  */
 
-function FlowChart({ csvUrl = "/boston_residential_sales_dummy.csv" }) {
+function FlowChart({ csvUrl = "/mapc_region_residential_sales_clean_aggregated.csv" }) {
   // -----------------------------------------------------------
   // 1) Constants & Config
   // -----------------------------------------------------------
@@ -69,6 +69,7 @@ function FlowChart({ csvUrl = "/boston_residential_sales_dummy.csv" }) {
   const [minYear, setMinYear] = useState(undefined);
   const [maxYear, setMaxYear] = useState(undefined);
   const [currentTime, setCurrentTime] = useState(undefined);
+  const [homePriceData, setHomePriceData] = useState({}); // New state for home price index
   
   // Animation state
   const [isPlaying, setIsPlaying] = useState(false);
@@ -109,6 +110,21 @@ function FlowChart({ csvUrl = "/boston_residential_sales_dummy.csv" }) {
       setCurrentTime(2000); 
     });
   }, [csvUrl]);
+
+  // Load home price index data
+  useEffect(() => {
+    d3.csv("/home_price_index.csv").then((data) => {
+      const priceData = {};
+      data.forEach(d => {
+        if (d.year && d.HPI) {
+          priceData[+d.year] = +d.HPI;
+        }
+      });
+      setHomePriceData(priceData);
+    }).catch(error => {
+      console.error("Error loading home price index data:", error);
+    });
+  }, []);
 
   // -----------------------------------------------------------
   // Animation functions for autoscroll
@@ -468,47 +484,28 @@ function FlowChart({ csvUrl = "/boston_residential_sales_dummy.csv" }) {
   const invProfit = invVisible.length * BUBBLE_VALUE;
   const nonInvProfit = nonInvVisible.length * BUBBLE_VALUE;
 
-  // Add median house prices by year (adjusted for inflation to 2021 dollars)
-  const medianHousePrices = {
-    2000: 285000,
-    2001: 310000,
-    2002: 345000,
-    2003: 375000,
-    2004: 410000,
-    2005: 450000,
-    2006: 425000,
-    2007: 410000,
-    2008: 370000,
-    2009: 350000,
-    2010: 360000,
-    2011: 365000,
-    2012: 380000,
-    2013: 410000,
-    2014: 440000,
-    2015: 475000,
-    2016: 510000,
-    2017: 550000,
-    2018: 595000,
-    2019: 630000,
-    2020: 680000,
-    2021: 750000
-  };
-
-  // Function to get the median house price for the current year
-  function getMedianHousePrice() {
+  // Function to get the home price index for the current year
+  function getHomePrice() {
     const year = Math.round(currentTime);
-    // Use the closest year we have data for
-    const availableYears = Object.keys(medianHousePrices).map(Number);
     
-    if (year <= availableYears[0]) return medianHousePrices[availableYears[0]];
-    if (year >= availableYears[availableYears.length - 1]) return medianHousePrices[availableYears[availableYears.length - 1]];
+    // If we have loaded data
+    if (Object.keys(homePriceData).length > 0) {
+      // Use the closest year we have data for
+      const availableYears = Object.keys(homePriceData).map(Number);
+      
+      if (year <= availableYears[0]) return homePriceData[availableYears[0]];
+      if (year >= availableYears[availableYears.length - 1]) return homePriceData[availableYears[availableYears.length - 1]];
+      
+      // Find the closest year in our data
+      const closestYear = availableYears.reduce((prev, curr) => 
+        Math.abs(curr - year) < Math.abs(prev - year) ? curr : prev
+      );
+      
+      return homePriceData[closestYear];
+    }
     
-    // Find the closest year in our data
-    const closestYear = availableYears.reduce((prev, curr) => 
-      Math.abs(curr - year) < Math.abs(prev - year) ? curr : prev
-    );
-    
-    return medianHousePrices[closestYear];
+    // If data hasn't loaded yet, return a default value
+    return 100; // Default value if data not loaded yet
   }
 
   // -----------------------------------------------------------
@@ -622,7 +619,7 @@ function FlowChart({ csvUrl = "/boston_residential_sales_dummy.csv" }) {
             fontSize="20px"
             fill="#333"
           >
-            = ${BUBBLE_VALUE.toLocaleString()} profit
+            = ${BUBBLE_VALUE.toLocaleString()}
           </text>
         </g>
 
@@ -660,7 +657,7 @@ function FlowChart({ csvUrl = "/boston_residential_sales_dummy.csv" }) {
             🏠
           </text>
           
-          {/* House price display on hover */}
+          {/* House price display on hover - updated text */}
           <text
             x={SPAWN_X}
             y={SPAWN_Y - 120} 
@@ -673,7 +670,7 @@ function FlowChart({ csvUrl = "/boston_residential_sales_dummy.csv" }) {
             opacity={hoverState.house ? 1 : 0}
             pointerEvents="none"
           >
-            Median House Price ({Math.round(currentTime)}):
+            Boston Home Price Index ({Math.round(currentTime)}):
           </text>
           <text
             x={SPAWN_X}
@@ -687,7 +684,7 @@ function FlowChart({ csvUrl = "/boston_residential_sales_dummy.csv" }) {
             opacity={hoverState.house ? 1 : 0}
             pointerEvents="none"
           >
-            ${getMedianHousePrice().toLocaleString()}
+            {getHomePrice().toLocaleString()}
           </text>
           
           {/* Label under house */}
@@ -808,7 +805,7 @@ function FlowChart({ csvUrl = "/boston_residential_sales_dummy.csv" }) {
           fontSize="22px"
           fill="blue"
         >
-          Non-Investor
+          Non-Investor Average
         </text>
         <text 
           x={clusterPositions.x} 
@@ -820,7 +817,7 @@ function FlowChart({ csvUrl = "/boston_residential_sales_dummy.csv" }) {
           fontSize="22px"
           fill="red"
         >
-          Investor
+          Investor Average
         </text>
       </svg>
     </div>
