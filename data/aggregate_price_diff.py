@@ -37,8 +37,6 @@ if __name__ == "__main__":
     # total number of rows that are not investor sold
     print(f"Total number of rows that are not investor sold: {df['investor_sold'].count() - df['investor_sold'].sum()}")
 
-
-
     # Only keep the columns we need
     df = df[
         [
@@ -59,18 +57,17 @@ if __name__ == "__main__":
     pivoted = grouped.pivot(index="year", columns="investor_sold", values="price_diff").reset_index()
 
     # Rename columns for clarity
-    pivoted.columns = ["year", "non_investor_price_diff_mean", "investor_price_diff_mean"]
+    # pivoted.columns = ["year", "non_investor_price_diff_mean", "investor_price_diff_mean"]
+    pivoted.columns = ["year", "noninvestor profit", "total investor profit"]
 
 
     # add row for difference between investor and non investor
-    pivoted["mean_profit_diff"] = pivoted["investor_price_diff_mean"] - pivoted["non_investor_price_diff_mean"]
+    pivoted["mean profit diff"] = pivoted["total investor profit"] - pivoted["noninvestor profit"]
 
     # Save the data
     pivoted.to_csv(f"{output_dir}/mapc_region_residential_sales_clean_aggregated.csv", index=False)
     print(f"Data saved to {output_dir}/mapc_region_residential_sales_clean_aggregated.csv")
     print(f"Data shape: {pivoted.shape}.")
-
-
 
 
 """
