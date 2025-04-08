@@ -2,12 +2,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 
 /**
- * FlowChart (ben-like physics + a bit of viscosity)
+ * FlowChart
  *
  * - Loads "/boston_residential_sales_dummy.csv" by default.
  * - Spawns all new bubbles at (x=150, y=400) if needed.
  * - Clusters using: 
- *     forceX -> x=650, 
+ *     forceX -> x=550, 
  *     forceY -> y=150 for non-investors, y=450 for investors,
  *     forceCollide -> prevent overlap.
  * - Adds velocityDecay(0.15) to reduce perpetual oscillation.
@@ -26,8 +26,8 @@ function FlowChart({ csvUrl = "/boston_residential_sales_dummy.csv" }) {
 
   // “Cluster” for investor vs. non-investor
   function clusterX(d) {
-    // Everyone clusters at x=650
-    return 650;
+    // Everyone clusters at x=550 (moved 100px left from 650)
+    return 550;
   }
   function clusterY(d) {
     // top cluster if non-investor, bottom cluster if investor
@@ -84,19 +84,29 @@ function FlowChart({ csvUrl = "/boston_residential_sales_dummy.csv" }) {
     if (!csvData.length) return { inv: 0, noninv: 0 };
 
     const earliestYear = csvData[0].year;
-    if (t <= earliestYear) {
-      return { inv: 0, noninv: 0 };
-    }
-
     const latestYear = csvData[csvData.length - 1].year;
+    
+    // Fix: Return the first year's data if at or before the earliest year
+    if (t <= earliestYear) {
+      return { 
+        inv: csvData[0].investor, 
+        noninv: csvData[0].noninvestor 
+      };
+    }
+    
+    // Fix: When at or after the latest year, return that exact value
     if (t >= latestYear) {
       const last = csvData[csvData.length - 1];
-      return { inv: last.investor, noninv: last.noninvestor };
+      return { 
+        inv: last.investor, 
+        noninv: last.noninvestor 
+      };
     }
 
+    // In between years - find the right interval
     let i1 = 0;
     for (let i = 0; i < csvData.length - 1; i++) {
-      if (csvData[i].year <= t && t <= csvData[i + 1].year) {
+      if (csvData[i].year <= t && t < csvData[i + 1].year) {
         i1 = i;
         break;
       }
@@ -202,11 +212,11 @@ function FlowChart({ csvUrl = "/boston_residential_sales_dummy.csv" }) {
   // -----------------------------------------------------------
   useEffect(() => {
     const sim = d3.forceSimulation()
-      // Use moderate .strength(0.05) for X & Y like "benoriginal"
+      // Use moderate .strength(0.05) for X & Y like "original"
       .force("x", d3.forceX(clusterX).strength(0.05))
       .force("y", d3.forceY(clusterY).strength(0.05))
       .force("collision", d3.forceCollide(COLLISION_RADIUS))
-      // Increase damping to better match benoriginal comment about 0.2-0.3 range
+      // Increase damping to better match original comment about 0.2-0.3 range
       .velocityDecay(0.3)   // Increased from 0.2 to 0.3
       .alphaDecay(0.02)
       .alphaMin(0.001)
@@ -245,7 +255,7 @@ function FlowChart({ csvUrl = "/boston_residential_sales_dummy.csv" }) {
     
     // Only reheat if the number of nodes has changed - prevents constant vibration
     if (prevNodesCount !== aliveBubbles.length) {
-      sim.alpha(0.8).restart();  // Use exact value from benoriginal (0.8)
+      sim.alpha(0.8).restart();  // Use exact value from original (0.8)
     } else if (sim.alpha() < 0.1) {
       // Just a gentle nudge if simulation is too settled but we have same nodes
       sim.alpha(0.1).restart();
@@ -299,7 +309,7 @@ function FlowChart({ csvUrl = "/boston_residential_sales_dummy.csv" }) {
 
   return (
     <div>
-      <h2>FlowChart Demo (ben-like physics + viscosity)</h2>
+      <h2>FlowChart Demo</h2>
 
       {/* Slider for time with tick marks */}
       <div style={{ marginBottom: '1rem' }}>
@@ -332,6 +342,28 @@ function FlowChart({ csvUrl = "/boston_residential_sales_dummy.csv" }) {
 
       {/* SVG */}
       <svg width={800} height={600} style={{ border: '1px solid #ccc' }}>
+        {/* Cluster labels */}
+        <text 
+          x={700} 
+          y={150} 
+          textAnchor="start" 
+          dominantBaseline="middle"
+          fontWeight="bold"
+          fill="green"
+        >
+          Non-Investor
+        </text>
+        <text 
+          x={700} 
+          y={450} 
+          textAnchor="start" 
+          dominantBaseline="middle"
+          fontWeight="bold"
+          fill="blue"
+        >
+          Investor
+        </text>
+
         {bubbles.map((b) => {
           const opacity = getOpacity(b);
           if (opacity <= 0) return null;
