@@ -20,9 +20,10 @@ function FlowChart({ csvUrl = "/boston_residential_sales_dummy.csv" }) {
   // -----------------------------------------------------------
   const BUBBLE_VALUE = 20000;     
   const LIFE_SPAN_YEARS = 1.0;    
-  const FADE_PORTION = 0.1;       
+  const FADE_PORTION = 0.05;       
   const COLLISION_RADIUS = 12;    
   const BUBBLE_RADIUS = 8;        
+  const ANIMATION_SPEED = 0.005;   // Years per animation frame (higher = faster)
 
   // “Cluster” for investor vs. non-investor
   function clusterX(d) {
@@ -41,6 +42,10 @@ function FlowChart({ csvUrl = "/boston_residential_sales_dummy.csv" }) {
   const [minYear, setMinYear] = useState(undefined);
   const [maxYear, setMaxYear] = useState(undefined);
   const [currentTime, setCurrentTime] = useState(undefined);
+  
+  // Animation state
+  const [isPlaying, setIsPlaying] = useState(false);
+  const animationRef = useRef(null);
 
   // Master bubble list
   const [bubbles, setBubbles] = useState([]);
@@ -70,6 +75,53 @@ function FlowChart({ csvUrl = "/boston_residential_sales_dummy.csv" }) {
       setCurrentTime(minY); // start slider at earliest year
     });
   }, [csvUrl]);
+
+  // -----------------------------------------------------------
+  // Animation functions for autoscroll
+  // -----------------------------------------------------------
+  function startAnimation() {
+    if (animationRef.current) return;
+    setIsPlaying(true);
+    
+    const animate = () => {
+      setCurrentTime(prev => {
+        if (prev >= maxYear) {
+          stopAnimation();
+          return maxYear;
+        }
+        return Math.min(maxYear, prev + ANIMATION_SPEED);
+      });
+      
+      animationRef.current = requestAnimationFrame(animate);
+    };
+    
+    animationRef.current = requestAnimationFrame(animate);
+  }
+  
+  function stopAnimation() {
+    if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current);
+      animationRef.current = null;
+    }
+    setIsPlaying(false);
+  }
+  
+  function toggleAnimation() {
+    if (isPlaying) {
+      stopAnimation();
+    } else {
+      startAnimation();
+    }
+  }
+  
+  // Clean up animation on unmount
+  useEffect(() => {
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, []);
 
   // -----------------------------------------------------------
   // 4) Interpolation
@@ -331,6 +383,41 @@ function FlowChart({ csvUrl = "/boston_residential_sales_dummy.csv" }) {
         <span style={{ marginLeft: '0.5rem' }}>
           Year: {Math.round(currentTime)}
         </span>
+        
+        {/* Play/Pause button for autoscroll */}
+        <button 
+          onClick={toggleAnimation}
+          style={{ 
+            marginLeft: '1rem',
+            padding: '0.25rem 0.75rem',
+            backgroundColor: isPlaying ? '#f44336' : '#4CAF50',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+        >
+          {isPlaying ? '❚❚ Pause' : '▶ Play'}
+        </button>
+        
+        {/* Reset button */}
+        <button 
+          onClick={() => {
+            stopAnimation();
+            setCurrentTime(minYear);
+          }}
+          style={{ 
+            marginLeft: '0.5rem',
+            padding: '0.25rem 0.75rem',
+            backgroundColor: '#2196F3',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+        >
+          ⟲ Reset
+        </button>
       </div>
 
       {/* Summary */}
