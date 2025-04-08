@@ -21,20 +21,46 @@ function FlowChart({ csvUrl = "/boston_residential_sales_dummy.csv" }) {
   const BUBBLE_VALUE = 5000;     
   const LIFE_SPAN_YEARS = 1.0;    
   const FADE_PORTION = 0.05;       
-  const COLLISION_RADIUS = 12 ;    
-  const BUBBLE_RADIUS = 10;        
+  const COLLISION_RADIUS = 10 ;    
+  const BUBBLE_RADIUS = 8;        
   const ANIMATION_SPEED = 0.01;   // Years per animation frame (higher = faster)
-  const DOLLAR_SIGN_SIZE = "20px";
+  const DOLLAR_SIGN_SIZE = "18px";
+  const CANVAS_HEIGHT = 700;
+  const CANVAS_WIDTH = 800;
+  
+  // Cluster configuration
+  const CLUSTER_CIRCLE_RADIUS = 130;
+  const CLUSTER_CIRCLE_STROKE_WIDTH = 2;
+  
+  // Define spawning point coordinates
+  const SPAWN_X = 180;
+  const SPAWN_Y = CANVAS_HEIGHT/2;
 
   // “Cluster” for investor vs. non-investor
+  const [clusterPositions, setClusterPositions] = useState({
+    x: 630,
+    nonInvY: 190,
+    invY: 510
+  });
+  
+  // Add hover state tracking
+  const [hoverState, setHoverState] = useState({
+    investor: false,
+    noninvestor: false,
+    house: false // Add house hover state
+  });
+
   function clusterX(d) {
-    // Everyone clusters at x=550 (moved 100px left from 650)
-    return 550;
+    // Everyone clusters at CLUSTER_X
+    return clusterPositions.x;
   }
   function clusterY(d) {
     // top cluster if non-investor, bottom cluster if investor
-    return d.type === 'investor' ? 450 : 150;
+    return d.type === 'investor' ? clusterPositions.invY : clusterPositions.nonInvY;
   }
+
+  // Define money green color constant
+  const MONEY_GREEN = "#85BB65";
 
   // -----------------------------------------------------------
   // 2) State
@@ -349,9 +375,9 @@ function FlowChart({ csvUrl = "/boston_residential_sales_dummy.csv" }) {
       id: Math.random().toString(36).substr(2, 9),
       type,
       birthTime,
-      // Spawn at (150, 400)
-      x: 150,
-      y: 300
+      // Spawn at defined spawn point
+      x: SPAWN_X,
+      y: SPAWN_Y
     };
   }
 
@@ -390,11 +416,11 @@ function FlowChart({ csvUrl = "/boston_residential_sales_dummy.csv" }) {
     // CRITICAL FIX: Only pass ALIVE bubbles to the simulation
     const aliveBubbles = bubbles.filter(b => getOpacity(b) > 0);
 
-    // If any bubble has no coords => put it at (150,400)
+    // If any bubble has no coords => put it at spawn point
     aliveBubbles.forEach(b => {
       if (b.x == null || b.y == null) {
-        b.x = 150;
-        b.y = 300;
+        b.x = SPAWN_X;
+        b.y = SPAWN_Y;
       }
     });
 
@@ -442,13 +468,56 @@ function FlowChart({ csvUrl = "/boston_residential_sales_dummy.csv" }) {
   const invProfit = invVisible.length * BUBBLE_VALUE;
   const nonInvProfit = nonInvVisible.length * BUBBLE_VALUE;
 
+  // Add median house prices by year (adjusted for inflation to 2021 dollars)
+  const medianHousePrices = {
+    2000: 285000,
+    2001: 310000,
+    2002: 345000,
+    2003: 375000,
+    2004: 410000,
+    2005: 450000,
+    2006: 425000,
+    2007: 410000,
+    2008: 370000,
+    2009: 350000,
+    2010: 360000,
+    2011: 365000,
+    2012: 380000,
+    2013: 410000,
+    2014: 440000,
+    2015: 475000,
+    2016: 510000,
+    2017: 550000,
+    2018: 595000,
+    2019: 630000,
+    2020: 680000,
+    2021: 750000
+  };
+
+  // Function to get the median house price for the current year
+  function getMedianHousePrice() {
+    const year = Math.round(currentTime);
+    // Use the closest year we have data for
+    const availableYears = Object.keys(medianHousePrices).map(Number);
+    
+    if (year <= availableYears[0]) return medianHousePrices[availableYears[0]];
+    if (year >= availableYears[availableYears.length - 1]) return medianHousePrices[availableYears[availableYears.length - 1]];
+    
+    // Find the closest year in our data
+    const closestYear = availableYears.reduce((prev, curr) => 
+      Math.abs(curr - year) < Math.abs(prev - year) ? curr : prev
+    );
+    
+    return medianHousePrices[closestYear];
+  }
+
   // -----------------------------------------------------------
   // 11) Render
   // -----------------------------------------------------------
   if (!csvData.length || minYear == null || maxYear == null || currentTime == null) {
     return <div>Loading CSV data or initializing...</div>;
   }
-
+  
   // Generate year marks for slider - start from 2000
   const yearMarks = [];
   for (let year = 2000; year <= 2021; year++) {
@@ -479,9 +548,6 @@ function FlowChart({ csvUrl = "/boston_residential_sales_dummy.csv" }) {
             <option key={year} value={year + 0.5} />
           ))}
         </datalist>
-        <span style={{ marginLeft: '0.5rem' }}>
-          Year: {Math.round(currentTime) === 1999 ? 2000 : Math.round(currentTime)}
-        </span>
         
         {/* Play/Pause button for autoscroll */}
         <button 
@@ -519,37 +585,127 @@ function FlowChart({ csvUrl = "/boston_residential_sales_dummy.csv" }) {
         </button>
       </div>
 
-      {/* Summary */}
-      <div style={{ marginBottom: '1rem' }}>
-        <div>Investor bubbles: {invVisible.length} (Profit: ${invProfit.toLocaleString()})</div>
-        <div>Non-investor bubbles: {nonInvVisible.length} (Profit: ${nonInvProfit.toLocaleString()})</div>
-        <div>Total Visible Profit: {(invProfit + nonInvProfit).toLocaleString()}</div>
-      </div>
+      {/* Remove the old Summary section */}
 
       {/* SVG */}
-      <svg width={800} height={600} style={{ border: '1px solid #ccc' }}>
-        {/* Cluster labels */}
-        <text 
-          x={700} 
-          y={150} 
-          textAnchor="start" 
+      <svg width={CANVAS_WIDTH} height={CANVAS_HEIGHT} style={{ border: '1px solid #ccc' }}>
+        {/* Legend in top left */}
+        <g transform="translate(20, 20)">
+          {/* Sample bubble */}
+          <circle
+            cx={BUBBLE_RADIUS*2}
+            cy={CANVAS_HEIGHT - BUBBLE_RADIUS*7.2}
+            r={BUBBLE_RADIUS*2}
+            opacity={1}
+            fill={MONEY_GREEN}
+          />
+          <text
+            x={BUBBLE_RADIUS*2}
+            y={CANVAS_HEIGHT - BUBBLE_RADIUS*7.2}
+            textAnchor="middle"
+            dominantBaseline="central"
+            fill="white"
+            fontSize="28px"
+            fontWeight="bold"
+          >
+            $
+          </text>
+          
+          {/* Legend text */}
+          <text
+            x={BUBBLE_RADIUS * 2 + 20}
+            y={CANVAS_HEIGHT - BUBBLE_RADIUS * 7}
+            textAnchor="start"
+            dominantBaseline="middle"
+            fontWeight="bold"
+            fontFamily="Helvetica Neue"
+            fontSize="20px"
+            fill="#333"
+          >
+            = ${BUBBLE_VALUE.toLocaleString()} profit
+          </text>
+        </g>
+
+        {/* HUGE Year display */}
+        <text
+          x={CANVAS_WIDTH/2}
+          y={50}
+          textAnchor="middle"
           dominantBaseline="middle"
+          fontFamily="Helvetica Neue"
           fontWeight="bold"
-          fill="red"
+          fontSize="64px"
+          fill="#333"
+          opacity="0.7"
         >
-          Non-Investor
-        </text>
-        <text 
-          x={700} 
-          y={450} 
-          textAnchor="start" 
-          dominantBaseline="middle"
-          fontWeight="bold"
-          fill="#2273f3"
-        >
-          Investor
+          {Math.round(currentTime) === 1999 ? 2000 : Math.round(currentTime)}
         </text>
 
+        {/* House emoji at spawning point with hover effect */}
+        <g>
+          <text
+            x={SPAWN_X}
+            y={SPAWN_Y}
+            textAnchor="middle"
+            dominantBaseline="middle"
+            fontSize="120px"
+            opacity={0.8}
+            style={{ 
+              fontFamily: 'Segoe UI Emoji, Apple Color Emoji, Noto Color Emoji, sans-serif',
+              cursor: 'pointer'
+            }}
+            onMouseEnter={() => setHoverState(prev => ({ ...prev, house: true }))}
+            onMouseLeave={() => setHoverState(prev => ({ ...prev, house: false }))}
+          >
+            🏠
+          </text>
+          
+          {/* House price display on hover */}
+          <text
+            x={SPAWN_X}
+            y={SPAWN_Y - 120} 
+            textAnchor="middle"
+            dominantBaseline="middle"
+            fontFamily="Helvetica Neue"
+            fontWeight="bold"
+            fontSize="22px"
+            fill="#333"
+            opacity={hoverState.house ? 1 : 0}
+            pointerEvents="none"
+          >
+            Median House Price ({Math.round(currentTime)}):
+          </text>
+          <text
+            x={SPAWN_X}
+            y={SPAWN_Y - 90} 
+            textAnchor="middle"
+            dominantBaseline="middle"
+            fontFamily="Helvetica Neue"
+            fontWeight="bold"
+            fontSize="24px"
+            fill="#1A6692"
+            opacity={hoverState.house ? 1 : 0}
+            pointerEvents="none"
+          >
+            ${getMedianHousePrice().toLocaleString()}
+          </text>
+          
+          {/* Label under house */}
+          <text
+            x={SPAWN_X}
+            y={SPAWN_Y + 80} 
+            textAnchor="middle"
+            dominantBaseline="middle"
+            fontFamily="Helvetica Neue"
+            fontWeight="bold"
+            fontSize="24px"
+            fill="#333"
+          >
+            Average Profit Per Sale
+          </text>
+        </g>
+
+        {/* Money bubbles - moved above the cluster circles so they appear behind */}
         {bubbles.map((b) => {
           const opacity = getOpacity(b);
           if (opacity <= 0) return null;
@@ -560,7 +716,7 @@ function FlowChart({ csvUrl = "/boston_residential_sales_dummy.csv" }) {
                 cy={b.y}
                 r={BUBBLE_RADIUS}
                 opacity={opacity}
-                fill={b.type === 'investor' ? '#2273f3' : 'red'}
+                fill={MONEY_GREEN}
               />
               <text
                 x={b.x}
@@ -577,6 +733,95 @@ function FlowChart({ csvUrl = "/boston_residential_sales_dummy.csv" }) {
             </React.Fragment>
           );
         })}
+
+        {/* Cluster background circles with hover effects */}
+        <g>
+          {/* Non-investor cluster */}
+          <circle
+            cx={clusterPositions.x}
+            cy={clusterPositions.nonInvY}
+            r={CLUSTER_CIRCLE_RADIUS}
+            fill="blue"
+            fillOpacity={hoverState.noninvestor ? 0.8 : 0.05}
+            stroke="blue"
+            strokeWidth={CLUSTER_CIRCLE_STROKE_WIDTH}
+            onMouseEnter={() => setHoverState(prev => ({ ...prev, noninvestor: true }))}
+            onMouseLeave={() => setHoverState(prev => ({ ...prev, noninvestor: false }))}
+            style={{ cursor: 'pointer' }}
+          />
+          
+          {/* Non-investor profit counter - only visible on hover */}
+          <text 
+            x={clusterPositions.x} 
+            y={clusterPositions.nonInvY}
+            textAnchor="middle" 
+            dominantBaseline="middle"
+            fontFamily="Helvetica Neue"
+            fontWeight="bold"
+            fontSize="18px"
+            fill="white"
+            opacity={hoverState.noninvestor ? 1 : 0}
+            pointerEvents="none"
+          >
+            Non-Investor Profit: ${nonInvProfit.toLocaleString()}
+          </text>
+
+          {/* Investor cluster */}
+          <circle
+            cx={clusterPositions.x}
+            cy={clusterPositions.invY}
+            r={CLUSTER_CIRCLE_RADIUS}
+            fill="red"
+            fillOpacity={hoverState.investor ? 0.8 : 0.05}
+            stroke="red"
+            strokeWidth={CLUSTER_CIRCLE_STROKE_WIDTH}
+            onMouseEnter={() => setHoverState(prev => ({ ...prev, investor: true }))}
+            onMouseLeave={() => setHoverState(prev => ({ ...prev, investor: false }))}
+            style={{ cursor: 'pointer' }}
+          />
+          
+          {/* Investor profit counter - only visible on hover */}
+          <text 
+            x={clusterPositions.x} 
+            y={clusterPositions.invY}
+            textAnchor="middle" 
+            dominantBaseline="middle"
+            fontFamily="Helvetica Neue"
+            fontWeight="bold"
+            fontSize="18px"
+            fill="white"
+            opacity={hoverState.investor ? 1 : 0}
+            pointerEvents="none"
+          >
+            Investor Profit: ${invProfit.toLocaleString()}
+          </text>
+        </g>
+
+        {/* Cluster labels - moved below circles and linked to circle positions */}
+        <text 
+          x={clusterPositions.x} 
+          y={clusterPositions.nonInvY + CLUSTER_CIRCLE_RADIUS + 20}
+          textAnchor="middle" 
+          dominantBaseline="middle"
+          fontFamily="Helvetica Neue"
+          fontWeight="bold"
+          fontSize="22px"
+          fill="blue"
+        >
+          Non-Investor
+        </text>
+        <text 
+          x={clusterPositions.x} 
+          y={clusterPositions.invY + CLUSTER_CIRCLE_RADIUS + 20}
+          textAnchor="middle" 
+          dominantBaseline="middle"
+          fontFamily="Helvetica Neue"
+          fontWeight="bold"
+          fontSize="22px"
+          fill="red"
+        >
+          Investor
+        </text>
       </svg>
     </div>
   );
