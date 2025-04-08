@@ -216,7 +216,7 @@ function FlowChart({ csvUrl = "/boston_residential_sales_dummy.csv" }) {
           futureBubbles.investor[i].birthTime = currentTime;
           // Reset position for recycled bubbles
           futureBubbles.investor[i].x = 150;
-          futureBubbles.investor[i].y = 400;
+          futureBubbles.investor[i].y = 300;
         }
         addInv -= toRecycle;
       }
@@ -227,7 +227,7 @@ function FlowChart({ csvUrl = "/boston_residential_sales_dummy.csv" }) {
           futureBubbles.noninvestor[i].birthTime = currentTime;
           // Reset position for recycled bubbles
           futureBubbles.noninvestor[i].x = 150;
-          futureBubbles.noninvestor[i].y = 400;
+          futureBubbles.noninvestor[i].y = 300;
         }
         addNonInv -= toRecycle;
       }
@@ -296,7 +296,7 @@ function FlowChart({ csvUrl = "/boston_residential_sales_dummy.csv" }) {
     aliveBubbles.forEach(b => {
       if (b.x == null || b.y == null) {
         b.x = 150;
-        b.y = 400;
+        b.y = 300;
       }
     });
 
