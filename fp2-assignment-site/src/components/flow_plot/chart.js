@@ -18,12 +18,12 @@ function FlowChart({ csvUrl = "/boston_residential_sales_dummy.csv" }) {
   // -----------------------------------------------------------
   // 1) Constants & Config
   // -----------------------------------------------------------
-  const BUBBLE_VALUE = 10000;     
+  const BUBBLE_VALUE = 5000;     
   const LIFE_SPAN_YEARS = 1.0;    
   const FADE_PORTION = 0.05;       
-  const COLLISION_RADIUS = 12;    
-  const BUBBLE_RADIUS = 8;        
-  const ANIMATION_SPEED = 0.02;   // Years per animation frame (higher = faster)
+  const COLLISION_RADIUS = 12 ;    
+  const BUBBLE_RADIUS = 10;        
+  const ANIMATION_SPEED = 0.01;   // Years per animation frame (higher = faster)
 
   // “Cluster” for investor vs. non-investor
   function clusterX(d) {
@@ -236,11 +236,11 @@ function FlowChart({ csvUrl = "/boston_residential_sales_dummy.csv" }) {
       const newBubbles = [];
       for (let i = 0; i < addInv; i++) {
         newBubbles.push(createBubble('investor', currentTime));
-        if (i== 0) break;
+        if (i== 1) break;
       }
       for (let i = 0; i < addNonInv; i++) {
         newBubbles.push(createBubble('noninvestor', currentTime));
-        if (i== 0) break;
+        if (i== 1) break;
       }
 
       // Shuffle the new bubbles to add them in random order
