@@ -14,7 +14,7 @@ import * as d3 from 'd3';
  * - Bubbles fade in/out over ~1 year of slider time (same logic as before).
  */
 
-function FlowChart({ csvUrl = "/mapc_region_residential_sales_clean_aggregated.csv" }) {
+function FlowChart({ csvUrl = `${process.env.PUBLIC_URL}/mapc_region_residential_sales_clean_aggregated.csv` }) {
   // -----------------------------------------------------------
   // 1) Constants & Config
   // -----------------------------------------------------------
@@ -113,13 +113,13 @@ function FlowChart({ csvUrl = "/mapc_region_residential_sales_clean_aggregated.c
 
   // Load home price index data
   useEffect(() => {
-    d3.csv("/home_price_index_decimal.csv").then((data) => {
+    d3.csv(`${process.env.PUBLIC_URL}/home_price_index_decimal.csv`).then((data) => {
       const priceData = {};
       data.forEach(d => {
-        // Use the decimal year format for more precise time points
-        if (d.year && d.HPI) {
-          priceData[+d.year] = +d.HPI;
-        }
+      // Use the decimal year format for more precise time points
+      if (d.year && d.HPI) {
+        priceData[+d.year] = +d.HPI;
+      }
       });
       setHomePriceData(priceData);
     }).catch(error => {
