@@ -113,9 +113,10 @@ function FlowChart({ csvUrl = "/mapc_region_residential_sales_clean_aggregated.c
 
   // Load home price index data
   useEffect(() => {
-    d3.csv("/home_price_index.csv").then((data) => {
+    d3.csv("/home_price_index_decimal.csv").then((data) => {
       const priceData = {};
       data.forEach(d => {
+        // Use the decimal year format for more precise time points
         if (d.year && d.HPI) {
           priceData[+d.year] = +d.HPI;
         }
@@ -484,28 +485,58 @@ function FlowChart({ csvUrl = "/mapc_region_residential_sales_clean_aggregated.c
   const invProfit = invVisible.length * BUBBLE_VALUE;
   const nonInvProfit = nonInvVisible.length * BUBBLE_VALUE;
 
-  // Function to get the home price index for the current year
+  // Function to get the home price index for the current time - using raw data without interpolation
   function getHomePrice() {
-    const year = Math.round(currentTime);
-    
     // If we have loaded data
     if (Object.keys(homePriceData).length > 0) {
-      // Use the closest year we have data for
-      const availableYears = Object.keys(homePriceData).map(Number);
+      // Get exact time point
+      const exactTime = currentTime;
       
-      if (year <= availableYears[0]) return homePriceData[availableYears[0]];
-      if (year >= availableYears[availableYears.length - 1]) return homePriceData[availableYears[availableYears.length - 1]];
+      // Get available time points
+      const availableTimePoints = Object.keys(homePriceData).map(Number).sort((a, b) => a - b);
       
-      // Find the closest year in our data
-      const closestYear = availableYears.reduce((prev, curr) => 
-        Math.abs(curr - year) < Math.abs(prev - year) ? curr : prev
+      // If before earliest data point
+      if (exactTime <= availableTimePoints[0]) {
+        return homePriceData[availableTimePoints[0]];
+      }
+      
+      // If after latest data point
+      if (exactTime >= availableTimePoints[availableTimePoints.length - 1]) {
+        return homePriceData[availableTimePoints[availableTimePoints.length - 1]];
+      }
+      
+      // Find the closest time point - no interpolation
+      const closestTimePoint = availableTimePoints.reduce((prev, curr) => 
+        Math.abs(curr - exactTime) < Math.abs(prev - exactTime) ? curr : prev
       );
       
-      return homePriceData[closestYear];
+      // Return the exact value at that time point
+      return homePriceData[closestTimePoint];
     }
     
     // If data hasn't loaded yet, return a default value
     return 100; // Default value if data not loaded yet
+  }
+
+  // Additional function to get the exact time point being used
+  function getDisplayTimePoint() {
+    if (Object.keys(homePriceData).length > 0) {
+      const exactTime = currentTime;
+      const availableTimePoints = Object.keys(homePriceData).map(Number).sort((a, b) => a - b);
+      
+      if (exactTime <= availableTimePoints[0]) {
+        return availableTimePoints[0];
+      }
+      
+      if (exactTime >= availableTimePoints[availableTimePoints.length - 1]) {
+        return availableTimePoints[availableTimePoints.length - 1];
+      }
+      
+      return availableTimePoints.reduce((prev, curr) => 
+        Math.abs(curr - exactTime) < Math.abs(prev - exactTime) ? curr : prev
+      );
+    }
+    return currentTime;
   }
 
   // -----------------------------------------------------------
@@ -788,7 +819,7 @@ function FlowChart({ csvUrl = "/mapc_region_residential_sales_clean_aggregated.c
             opacity={hoverState.house ? 1 : 0}
             pointerEvents="none"
           >
-            Boston Home Price Index ({Math.round(currentTime)}):
+            Boston Home Price Index ({getDisplayTimePoint().toFixed(2)}):
           </text>
           <text
             x={SPAWN_X}
@@ -802,7 +833,7 @@ function FlowChart({ csvUrl = "/mapc_region_residential_sales_clean_aggregated.c
             opacity={hoverState.house ? 1 : 0}
             pointerEvents="none"
           >
-            {getHomePrice().toLocaleString()}
+            {getHomePrice().toFixed(2)}
           </text>
           
           {/* Label under house */}
@@ -831,7 +862,7 @@ function FlowChart({ csvUrl = "/mapc_region_residential_sales_clean_aggregated.c
       }}>
         <p>
           Data sources: MAPC Region Residential Sales (2000-2022), 
-          Boston Home Price Index (2000-2022)
+          S&P CoreLogic Case-Shiller MA-Boston Home Price Index (1987-2024)
         </p>
       </div>
     </div>
