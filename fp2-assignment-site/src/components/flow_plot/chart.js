@@ -813,7 +813,7 @@ function FlowChart({ csvUrl = "/mapc_region_residential_sales_clean_aggregated.c
                 />
                 <text
                   x={b.x}
-                  y={b.y}
+                  y={b.y+1.25}
                   textAnchor="middle"
                   dominantBaseline="central"
                   fill="white"
