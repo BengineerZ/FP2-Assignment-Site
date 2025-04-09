@@ -19,12 +19,12 @@ function FlowChart({ csvUrl = "/mapc_region_residential_sales_clean_aggregated.c
   // 1) Constants & Config
   // -----------------------------------------------------------
   const BUBBLE_VALUE = 5000;     
-  const LIFE_SPAN_YEARS = 0.95;    
+  const LIFE_SPAN_YEARS = 1.0;    
   const FADE_PORTION = 0.05;       
-  const COLLISION_RADIUS = 10 ;    
-  const BUBBLE_RADIUS = 8;        
+  const COLLISION_RADIUS = 9;    
+  const BUBBLE_RADIUS = 7;        
   const ANIMATION_SPEED = 0.01;   // Years per animation frame (higher = faster)
-  const DOLLAR_SIGN_SIZE = "18px";
+  const DOLLAR_SIGN_SIZE = "16px";
   const CANVAS_HEIGHT = 700;
   const CANVAS_WIDTH = 800;
   
@@ -223,7 +223,47 @@ function FlowChart({ csvUrl = "/mapc_region_residential_sales_clean_aggregated.c
     };
   }
 
-  // New function to schedule bubble births
+  // Function to get the interpolated profit amounts directly from the data
+  function getDataProfit(t) {
+    if (!csvData.length) return { inv: 0, noninv: 0 };
+
+    const earliestYear = csvData[0].year;
+    const latestYear = csvData[csvData.length - 1].year;
+    
+    if (t <= earliestYear) {
+      return { 
+        inv: csvData[0].investor, 
+        noninv: csvData[0].noninvestor 
+      };
+    }
+    
+    if (t >= latestYear) {
+      const last = csvData[csvData.length - 1];
+      return { 
+        inv: last.investor, 
+        noninv: last.noninvestor 
+      };
+    }
+
+    // Find the right interval
+    let i1 = 0;
+    for (let i = 0; i < csvData.length - 1; i++) {
+      if (csvData[i].year <= t && t < csvData[i + 1].year) {
+        i1 = i;
+        break;
+      }
+    }
+    
+    const d0 = csvData[i1];
+    const d1 = csvData[i1 + 1];
+
+    return {
+      inv: lerp(d0.year, d0.investor, d1.year, d1.investor, t),
+      noninv: lerp(d0.year, d0.noninvestor, d1.year, d1.noninvestor, t)
+    };
+  }
+
+  // An improved version of the bubble scheduling function that ensures exact ball counts
   function scheduleBubbleBirths(csvData) {
     if (!csvData || csvData.length < 2) return;
 
@@ -236,79 +276,61 @@ function FlowChart({ csvUrl = "/mapc_region_residential_sales_clean_aggregated.c
       const endYear = csvData[i+1].year;
       const yearSpan = endYear - startYear;
       
-      // Calculate bubbles needed for each period based on interpolated profits
-      for (let fraction = 0; fraction < 1.0; fraction += 0.01) { // Step through the period
-        const timePoint = startYear + (yearSpan * fraction);
-        const nextTimePoint = timePoint + 0.01 * yearSpan;
+      // For each year, calculate exact bubble count based on raw data
+      for (let timePoint = startYear; timePoint <= endYear; timePoint += 0.1) {
+        // Get target bubble counts at this exact time point
+        const profits = getDataProfit(timePoint);
+        const targetInvCount = Math.round(profits.inv / BUBBLE_VALUE);
+        const targetNonInvCount = Math.round(profits.noninv / BUBBLE_VALUE);
         
-        // Get interpolated profit at current and next time points
-        const currentProfit = getInterpolatedProfits(timePoint);
-        const nextProfit = getInterpolatedProfits(nextTimePoint);
-        
-        // Calculate bubble counts at each point
-        const currentInvBubbles = Math.floor(currentProfit.inv / BUBBLE_VALUE);
-        const nextInvBubbles = Math.floor(nextProfit.inv / BUBBLE_VALUE);
-        const currentNonInvBubbles = Math.floor(currentProfit.noninv / BUBBLE_VALUE);
-        const nextNonInvBubbles = Math.floor(nextProfit.noninv / BUBBLE_VALUE);
-        
-        // Calculate net new bubbles needed
-        const newInvBubbles = nextInvBubbles - currentInvBubbles;
-        const newNonInvBubbles = nextNonInvBubbles - currentNonInvBubbles;
-        
-        // Also calculate how many bubbles will despawn in this interval
-        const despawningInv = invSchedule.filter(time => 
-          time + LIFE_SPAN_YEARS >= timePoint && 
-          time + LIFE_SPAN_YEARS < nextTimePoint
+        // Count how many bubbles will be alive at this timepoint
+        // (bubbles that were born before and haven't expired yet)
+        const aliveInvCount = invSchedule.filter(birthTime => 
+          birthTime <= timePoint && 
+          (timePoint - birthTime) <= LIFE_SPAN_YEARS
         ).length;
         
-        const despawningNonInv = nonInvSchedule.filter(time => 
-          time + LIFE_SPAN_YEARS >= timePoint && 
-          time + LIFE_SPAN_YEARS < nextTimePoint
+        const aliveNonInvCount = nonInvSchedule.filter(birthTime => 
+          birthTime <= timePoint && 
+          (timePoint - birthTime) <= LIFE_SPAN_YEARS
         ).length;
         
-        // Add new bubbles needed + replacement for despawning ones
-        const totalNewInv = Math.max(0, newInvBubbles + despawningInv);
-        const totalNewNonInv = Math.max(0, newNonInvBubbles + despawningNonInv);
+        // Add exactly the number of bubbles needed to match the count
+        const invBubblesToAdd = Math.max(0, targetInvCount - aliveInvCount);
+        const nonInvBubblesToAdd = Math.max(0, targetNonInvCount - aliveNonInvCount);
         
-        // Schedule new bubbles evenly across this small interval
-        if (totalNewInv > 0) {
-          const spacing = (0.01 * yearSpan) / totalNewInv;
-          for (let j = 0; j < totalNewInv; j++) {
-            invSchedule.push(timePoint + j * spacing);
-          }
+        // Add new bubbles with slight time offset for more natural appearance
+        for (let j = 0; j < invBubblesToAdd; j++) {
+          const birthTime = timePoint - (j * 0.001); // Very small offset
+          invSchedule.push(birthTime);
         }
         
-        if (totalNewNonInv > 0) {
-          const spacing = (0.01 * yearSpan) / totalNewNonInv;
-          for (let j = 0; j < totalNewNonInv; j++) {
-            nonInvSchedule.push(timePoint + j * spacing);
-          }
+        for (let j = 0; j < nonInvBubblesToAdd; j++) {
+          const birthTime = timePoint - (j * 0.001); // Very small offset
+          nonInvSchedule.push(birthTime);
         }
       }
     }
     
-    // Handle initial bubbles for the first data point
-    const initialTime = csvData[0].year;
-    const initialProfits = getInterpolatedProfits(initialTime);
+    // For the initial period, add bubbles for pre-start visibility
+    const initialYear = csvData[0].year;
+    const initialProfits = getDataProfit(initialYear);
+    const initialInvCount = Math.round(initialProfits.inv / BUBBLE_VALUE);
+    const initialNonInvCount = Math.round(initialProfits.noninv / BUBBLE_VALUE);
     
-    const initialInvCount = Math.floor(initialProfits.inv / BUBBLE_VALUE);
-    const initialNonInvCount = Math.floor(initialProfits.noninv / BUBBLE_VALUE);
-    
-    // Add initial bubbles slightly before start time (distributed over 0.5 years)
-    if (initialInvCount > 0) {
-      const spacing = 0.5 / initialInvCount;
-      for (let i = 0; i < initialInvCount; i++) {
-        invSchedule.push(initialTime - 0.5 + (i * spacing));
-      }
+    // Add bubbles in a staggered fashion before the initial year
+    // to avoid all appearing at once
+    for (let i = 0; i < initialInvCount; i++) {
+      const birthTime = initialYear - LIFE_SPAN_YEARS * 0.9 + (i * 0.01);
+      invSchedule.push(birthTime);
     }
     
-    if (initialNonInvCount > 0) {
-      const spacing = 0.5 / initialNonInvCount;
-      for (let i = 0; i < initialNonInvCount; i++) {
-        nonInvSchedule.push(initialTime - 0.5 + (i * spacing));
-      }
+    for (let i = 0; i < initialNonInvCount; i++) {
+      const birthTime = initialYear - LIFE_SPAN_YEARS * 0.9 + (i * 0.01);
+      nonInvSchedule.push(birthTime);
     }
     
+    // Sort bubble birth times and set state
     setScheduledBubbles({
       investor: invSchedule.sort((a, b) => a - b),
       noninvestor: nonInvSchedule.sort((a, b) => a - b)
@@ -482,8 +504,10 @@ function FlowChart({ csvUrl = "/mapc_region_residential_sales_clean_aggregated.c
   const invVisible = bubbles.filter(b => b.type === 'investor' && getOpacity(b) > 0);
   const nonInvVisible = bubbles.filter(b => b.type === 'noninvestor' && getOpacity(b) > 0);
 
-  const invProfit = invVisible.length * BUBBLE_VALUE;
-  const nonInvProfit = nonInvVisible.length * BUBBLE_VALUE;
+  // Calculate profit directly from data instead of counting bubbles
+  const directProfit = getDataProfit(currentTime);
+  const invProfit = directProfit.inv;
+  const nonInvProfit = directProfit.noninv;
 
   // Function to get the home price index for the current time - using raw data without interpolation
   function getHomePrice() {
@@ -798,6 +822,34 @@ function FlowChart({ csvUrl = "/mapc_region_residential_sales_clean_aggregated.c
             {Math.round(currentTime) === 1999 ? 2000 : Math.round(currentTime)}
           </text>
 
+          {/* Debug info - count display - COMMENTED OUT 
+          <g transform="translate(20, 60)">
+            <text
+              fontFamily="Helvetica Neue"
+              fontWeight="bold"
+              fontSize="16px"
+              fill="#666"
+              textAnchor="start"
+              dominantBaseline="middle"
+            >
+              Visible bubbles: {invVisible.length + nonInvVisible.length} 
+              (Inv: {invVisible.length}, Non-Inv: {nonInvVisible.length})
+            </text>
+            <text
+              y="25"
+              fontFamily="Helvetica Neue"
+              fontWeight="bold"
+              fontSize="16px"
+              fill="#666"
+              textAnchor="start"
+              dominantBaseline="middle"
+            >
+              Expected: {Math.round(invProfit / BUBBLE_VALUE) + Math.round(nonInvProfit / BUBBLE_VALUE)}
+              (Inv: {Math.round(invProfit / BUBBLE_VALUE)}, Non-Inv: {Math.round(nonInvProfit / BUBBLE_VALUE)})
+            </text>
+          </g>
+          */}
+
           {/* Money bubbles - moved BEFORE the house so they appear BEHIND */}
           {bubbles.map((b) => {
             const opacity = getOpacity(b);
@@ -873,7 +925,7 @@ function FlowChart({ csvUrl = "/mapc_region_residential_sales_clean_aggregated.c
               opacity={hoverState.noninvestor ? 1 : 0}
               pointerEvents="none"
             >
-              Non-Investor Profit: ${nonInvProfit.toLocaleString()}
+              Non-Investor Profit: ${Math.round(nonInvProfit).toLocaleString()}
             </text>
 
             {/* Investor cluster */}
@@ -920,7 +972,7 @@ function FlowChart({ csvUrl = "/mapc_region_residential_sales_clean_aggregated.c
               opacity={hoverState.investor ? 1 : 0}
               pointerEvents="none"
             >
-              Investor Profit: ${invProfit.toLocaleString()}
+              Investor Profit: ${Math.round(invProfit).toLocaleString()}
             </text>
           </g>
 
