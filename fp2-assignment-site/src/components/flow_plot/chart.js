@@ -585,7 +585,7 @@ function FlowChart({ csvUrl = "/mapc_region_residential_sales_clean_aggregated.c
       {/* Remove the old Summary section */}
 
       {/* SVG */}
-      <svg width={CANVAS_WIDTH} height={CANVAS_HEIGHT} style={{ border: '1px solid #ccc' }}>
+      <svg width={CANVAS_WIDTH} height={CANVAS_HEIGHT} >
         {/* Legend in top left */}
         <g transform="translate(20, 20)">
           {/* Sample bubble */}

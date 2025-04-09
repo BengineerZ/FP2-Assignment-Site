@@ -1,15 +1,16 @@
 .header {
-    padding: 10px 20px;
-    text-align: center;
-    margin-top: 100px;
-    margin-bottom: 800px;
-  }
-  
+  padding: 10px 20px;
+  text-align: center;
+  margin-top: 100px;
+  padding-bottom: 200px; /* Add padding to the bottom */
+  margin-bottom: 400px;
+  position: relative; /* Position relative for absolute children */
+}
+
 .house {
-    width: 150px;
-    height: auto;
-    /* fill: #2273f3; changes the color if SVG uses `fill="currentColor"` */
-  }
+  width: 150px;
+  height: auto;
+}
 
 .house .primary {
   fill: #2273f3;
@@ -17,4 +18,53 @@
 
 .house .secondary {
   fill: #2273f3;
+}
+
+.vertical-line-container {
+  position: absolute;
+  left: 50%; /* Center the line */
+  transform: translateX(-50%);
+  top: 0;
+  width: 10px; /* Width of the container */
+}
+
+.vertical-line {
+  position: absolute;
+  left: 50%; /* Adjust as needed */
+  transform: translateX(-50%);
+  top: 415px;
+  width: 7.5px; /* Thickness of the line */
+  background-color: #bfbfbf; /* Line color */
+  transition: height 0.1s ease-out; /* Smooth height adjustment */
+}
+
+.start-node,
+.end-node {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 30px;
+  height: 30px;
+  background-color: #bfbfbf;
+  border-radius: 50%; /* Makes the node circular */
+}
+
+.start-node {
+  top: 390px; /* Always visible at the top */
+}
+
+.end-node {
+  top: 980px; /* Visible only when scroll is complete */
+  transition: 0.1s ease-out;
+}
+
+.node-middle {
+  background-color: #fff8ed;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%; /* Makes the node circular */
+  position: absolute;
+  left: 50%;
+  top: 50%; /* Vertically center the node */
+  transform: translate(-50%, -50%);
 }
