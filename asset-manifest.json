@@ -1,16 +1,16 @@
 {
   "files": {
     "main.css": "/FP2-Assignment-Site/static/css/main.01433e36.css",
-    "main.js": "/FP2-Assignment-Site/static/js/main.f740cddd.js",
+    "main.js": "/FP2-Assignment-Site/static/js/main.64985112.js",
     "static/js/453.aa1918a8.chunk.js": "/FP2-Assignment-Site/static/js/453.aa1918a8.chunk.js",
     "static/media/houses-svgrepo-com.svg": "/FP2-Assignment-Site/static/media/houses-svgrepo-com.1f6bddb02faeccb29dbdd2a839a86ff4.svg",
     "index.html": "/FP2-Assignment-Site/index.html",
     "main.01433e36.css.map": "/FP2-Assignment-Site/static/css/main.01433e36.css.map",
-    "main.f740cddd.js.map": "/FP2-Assignment-Site/static/js/main.f740cddd.js.map",
+    "main.64985112.js.map": "/FP2-Assignment-Site/static/js/main.64985112.js.map",
     "453.aa1918a8.chunk.js.map": "/FP2-Assignment-Site/static/js/453.aa1918a8.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.01433e36.css",
-    "static/js/main.f740cddd.js"
+    "static/js/main.64985112.js"
   ]
 }
