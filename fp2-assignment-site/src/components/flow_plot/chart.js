@@ -820,6 +820,20 @@ function FlowChart({ csvUrl = "/mapc_region_residential_sales_clean_aggregated.c
           </text>
         </g>
       </svg>
+      
+      {/* Citation sources */}
+      <div style={{ 
+        marginTop: '20px', 
+        fontSize: '18px', 
+        color: '#666', 
+        fontStyle: 'italic',
+        textAlign: 'center'
+      }}>
+        <p>
+          Data sources: MAPC Region Residential Sales (2000-2022), 
+          Boston Home Price Index (2000-2022)
+        </p>
+      </div>
     </div>
   );
 }
