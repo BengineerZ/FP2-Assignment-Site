@@ -19,7 +19,7 @@ function FlowChart({ csvUrl = "/mapc_region_residential_sales_clean_aggregated.c
   // 1) Constants & Config
   // -----------------------------------------------------------
   const BUBBLE_VALUE = 5000;     
-  const LIFE_SPAN_YEARS = 1.0;    
+  const LIFE_SPAN_YEARS = 0.95;    
   const FADE_PORTION = 0.05;       
   const COLLISION_RADIUS = 10 ;    
   const BUBBLE_RADIUS = 8;        
