@@ -557,7 +557,7 @@ function FlowChart({ csvUrl = "/mapc_region_residential_sales_clean_aggregated.c
 
   return (
     <div>
-      <h2>FlowChart Demo</h2>
+      {/* Removed "FlowChart Demo" heading */}
 
       {/* Slider for time with tick marks */}
       <div style={{ marginBottom: '1rem' }}>
