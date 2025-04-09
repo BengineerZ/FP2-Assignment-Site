@@ -1,68 +1,59 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import './ScrollLineConnector.css';
 
-const ScrollLineConnector = ({ startSectionId, endSectionId, scrollHeight }) => {
-  const startSectionRef = useRef(null);
-  const endSectionRef = useRef(null);
-  const lineRef = useRef(null);
-
+const ScrollLine = () => {
   const [lineHeight, setLineHeight] = useState(0);
+  const [isScrollComplete, setIsScrollComplete] = useState(false);
+  const [showInfoContainer, setShowInfoContainer] = useState(false);
 
-  // Function to calculate the scroll progress and update the line height
-  const handleScroll = () => {
-    if (!startSectionRef.current || !endSectionRef.current || !lineRef.current) return;
-
-    // Get the positions of the start and end sections relative to the viewport
-    const startSectionBottom = startSectionRef.current.getBoundingClientRect().bottom + window.scrollY;
-    const endSectionTop = endSectionRef.current.getBoundingClientRect().top + window.scrollY;
-
-    // The scroll position (current scrollY)
-    const scrollY = window.scrollY + window.innerHeight / 2;
-
-    // Calculate the total scrollable distance between the two sections
-    const totalScrollDistance = endSectionTop - startSectionBottom;
-
-    // Ensure we're within the bounds of the two sections
-    if (scrollY >= startSectionBottom && scrollY <= endSectionTop) {
-      // Calculate scroll progress as a percentage (0 to 1)
-      const progress = Math.min(Math.max((scrollY - startSectionBottom) / totalScrollDistance, 0), 1);
-
-      // Calculate the line height based on the scroll progress and the desired scroll height
-      const currentLineHeight = progress * scrollHeight;
-
-      // Set the line height dynamically
-      setLineHeight(currentLineHeight);
-
-      // Position the line correctly (start at the bottom of startSection)
-      lineRef.current.style.top = `${startSectionBottom - window.scrollY}px`;
-    }
-  };
-
-  // Set up scroll event listener when component mounts
   useEffect(() => {
-    window.addEventListener('scroll', handleScroll);
-    handleScroll(); // Initialize line height on component mount
+    const handleScroll = () => {
+      const header = document.getElementById('info_1');
+      const headerBottom = header.offsetTop + header.offsetHeight;
+      const scrollPosition = window.scrollY + 400;
 
-    return () => {
-      window.removeEventListener('scroll', handleScroll); // Cleanup scroll listener
+      if (scrollPosition < header.offsetTop) {
+        setLineHeight(0); // Before the header
+        setIsScrollComplete(false);
+        setShowInfoContainer(false);
+      } else if (scrollPosition < headerBottom) {
+        const progress = (scrollPosition - header.offsetTop) / header.offsetHeight;
+        setLineHeight(scrollPosition - header.offsetTop); // While scrolling in the header
+        setIsScrollComplete(false);
+        setShowInfoContainer(progress >= 0.5); // Show info-container at 50% scroll
+      } else {
+        setLineHeight(header.offsetHeight); // After scrolling past the header
+        setIsScrollComplete(true);
+        setShowInfoContainer(true);
+      }
     };
-  }, []); // Empty dependency array ensures this effect runs only once
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   return (
-    <div style={{ position: 'relative' }}>
-      {/* The line between the two sections */}
-      <div
-        ref={lineRef}
-        className="line"
-        style={{
-          height: `${lineHeight}px`, // Use dynamic height
-          position: 'absolute',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          transition: 'height 0.2s ease', // Optional: Add smooth transition for height change
-        }}
-      ></div>
+    <div className='info_wrapper' id='info_1'>
+      <div className="vertical-line-container">
+        <div className="start-node"> <div className="node-middle"></div></div>
+        <div className="vertical-line" style={{ height: `${lineHeight}px` }}></div>
+        {isScrollComplete && (
+          <div
+            className="end-node"
+            style={{ position: 'absolute', top: `${lineHeight}px` }}
+          >
+            <div className="node-middle"></div>
+          </div>
+        )}
+      </div>
+      <p
+        className='info-container'
+        style={{ opacity: showInfoContainer ? 1 : 0 }}
+      >
+        Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
+      </p>
     </div>
   );
 };
 
-export default ScrollLineConnector;
+export default ScrollLine;

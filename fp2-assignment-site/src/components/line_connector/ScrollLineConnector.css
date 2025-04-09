@@ -1,5 +1,90 @@
-.line {
-  width: 2px;
-  background-color: #007bff; /* Blue */
-  transition: height 0.5s ease;
+.info_wrapper {
+  padding: 10px 20px;
+  text-align: center;
+  position: relative; /* Position relative for absolute children */
+  padding-top: 300px;
+  padding-bottom: 300px;
+}
+
+.house {
+  width: 150px;
+  height: auto;
+}
+
+.house .primary {
+  fill: #2273f3;
+}
+
+.house .secondary {
+  fill: #2273f3;
+}
+
+.vertical-line-container {
+  position: absolute;
+  left: 50%; /* Center the line */
+  transform: translateX(-50%);
+  top: 0;
+  width: 10px; /* Width of the container */
+}
+
+.vertical-line {
+  position: absolute;
+  left: 50%; /* Adjust as needed */
+  transform: translateX(-50%);
+  top: 25px;
+  width: 7.5px; /* Thickness of the line */
+  background-color: #bfbfbf; /* Line color */
+  transition: height 0.1s ease-out; 
+  z-index: 1;
+}
+
+.start-node,
+.end-node {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 30px;
+  height: 30px;
+  background-color: #bfbfbf;
+  border-radius: 50%; /* Makes the node circular */
+  z-index: 2;
+}
+
+.start-node {
+  top: 0px; /* Always visible at the top */
+}
+
+.end-node {
+  top :-500px; /* Visible only when scroll is complete */
+}
+
+.node-middle {
+  background-color: #fff8ed;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%; /* Makes the node circular */
+  position: absolute;
+  left: 50%;
+  top: 50%; /* Vertically center the node */
+  transform: translate(-50%, -50%);
+}
+
+.info-container {
+  width: 800px;
+  /* max-width: 400px; */
+  /* display: flex; */
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  border: 7.5px solid #bfbfbf;
+  border-radius: 15px;
+  padding: 10px;
+  background-color: #fff8ed;
+  z-index: 10000; /* Ensure it appears above other elements */
+  opacity: 0; /* Initially hidden */
+  transition: opacity 0.2s ease-in-out; /* Smooth fade-in effect */
 }

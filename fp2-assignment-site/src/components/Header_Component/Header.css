@@ -2,8 +2,8 @@
   padding: 10px 20px;
   text-align: center;
   margin-top: 100px;
-  padding-bottom: 200px; /* Add padding to the bottom */
-  margin-bottom: 400px;
+  /* padding-bottom: 200px; Add padding to the bottom */
+  /* margin-bottom: 100px; */
   position: relative; /* Position relative for absolute children */
 }
 

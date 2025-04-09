@@ -30,11 +30,11 @@ const Header = () => {
 
   return (
     <header className='header section' id='home'>
-      <div className="vertical-line-container">
+      {/* <div className="vertical-line-container">
         <div className="start-node"> <div className="node-middle"></div></div>
         <div className="vertical-line" style={{ height: `${lineHeight}px` }}></div>
         {isScrollComplete && <div className="end-node"><div className="node-middle"></div></div>}
-      </div>
+      </div> */}
       <h1>Homes for Profit, Not for People</h1>
       <h3>Proof of Concept</h3>
       <h4>How has speculative investment contributed to the growing inaccessibility of affordable housing?</h4>
