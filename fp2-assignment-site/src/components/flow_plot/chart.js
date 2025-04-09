@@ -844,7 +844,7 @@ function FlowChart({ csvUrl = "/mapc_region_residential_sales_clean_aggregated.c
             />
             
             {/* Info tooltip indicator for non-investor circle */}
-            <g transform={`translate(${clusterPositions.x + CLUSTER_CIRCLE_RADIUS - 20}, ${clusterPositions.nonInvY + CLUSTER_CIRCLE_RADIUS - 20})`}>
+            <g transform={`translate(${clusterPositions.x + CLUSTER_CIRCLE_RADIUS - 35}, ${clusterPositions.nonInvY + CLUSTER_CIRCLE_RADIUS - 35})`}>
               <circle r="12" fill="white" stroke="blue" strokeWidth="1.5" />
               <text
                 textAnchor="middle"
@@ -891,7 +891,7 @@ function FlowChart({ csvUrl = "/mapc_region_residential_sales_clean_aggregated.c
             />
             
             {/* Info tooltip indicator for investor circle */}
-            <g transform={`translate(${clusterPositions.x + CLUSTER_CIRCLE_RADIUS - 20}, ${clusterPositions.invY + CLUSTER_CIRCLE_RADIUS - 20})`}>
+            <g transform={`translate(${clusterPositions.x + CLUSTER_CIRCLE_RADIUS - 35}, ${clusterPositions.invY + CLUSTER_CIRCLE_RADIUS - 35})`}>
               <circle r="12" fill="white" stroke="red" strokeWidth="1.5" />
               <text
                 textAnchor="middle"
