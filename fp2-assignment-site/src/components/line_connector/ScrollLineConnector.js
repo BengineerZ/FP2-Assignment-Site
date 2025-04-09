@@ -20,7 +20,7 @@ const ScrollLine = () => {
         const progress = (scrollPosition - header.offsetTop) / header.offsetHeight;
         setLineHeight(scrollPosition - header.offsetTop); // While scrolling in the header
         setIsScrollComplete(false);
-        setShowInfoContainer(progress >= 0.5); // Show info-container at 50% scroll
+        setShowInfoContainer(progress >= 0.4); // Show info-container at 50% scroll
       } else {
         setLineHeight(header.offsetHeight); // After scrolling past the header
         setIsScrollComplete(true);
@@ -50,7 +50,9 @@ const ScrollLine = () => {
         className='info-container'
         style={{ opacity: showInfoContainer ? 1 : 0 }}
       >
-        Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
+        Speculation, or the practice of housing investment for profit generation, has been a major part of the Boston housing ecosystem. In our analysis, we seek to understand the impact of speculation on housing availability and prices as well as the mechanisms by which speculation is causing disproportionate impact on the affordable housing market. We start our exploration with a visualization showing the profit generation of speculators and non-investors alongside the S&P Boston, MA Home Pricing Index (BOXRSA). 
+        
+        You will notice certain trends about the data, including large drops in profits during the 2008 recession and a steady increase in investor profits over time. We also see that the BOXRSA has been steadily increasing over time, indicating that housing prices are rising. This is a concerning trend, as it suggests that speculation is driving up housing prices and making it more difficult for people to afford homes.
       </p>
     </div>
   );

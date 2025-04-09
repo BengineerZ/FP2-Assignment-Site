@@ -66,6 +66,12 @@ h4 {
   color: #2273f3;
 }
 
+p {
+  font-size: 1.2rem;
+  margin: 20px;
+  line-height: 1.5;
+}
+
 .wrapper {
   max-width: 800px; /* or whatever width you want */
   margin: 0 auto;    /* centers the container */

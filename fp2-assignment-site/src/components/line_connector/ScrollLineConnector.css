@@ -83,8 +83,9 @@
   border: 7.5px solid #bfbfbf;
   border-radius: 15px;
   padding: 10px;
-  background-color: #fff8ed;
+  background-color: #fffdfa;
   z-index: 10000; /* Ensure it appears above other elements */
   opacity: 0; /* Initially hidden */
   transition: opacity 0.2s ease-in-out; /* Smooth fade-in effect */
+  box-shadow: '2px 2px 5px rgba(0,0,0,0.1)'
 }
