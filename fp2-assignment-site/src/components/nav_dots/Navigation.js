@@ -8,7 +8,7 @@ export default function NavigationDots() {
 
   useEffect(() => {
     const handleScroll = () => {
-      const scrollPosition = window.scrollY + window.innerHeight / 2;
+      const scrollPosition = window.scrollY + window.innerHeight / 2 -100;
 
       for (let section of sections) {
         const element = document.getElementById(section);
