@@ -404,8 +404,8 @@ function FlowChart({ csvUrl = "/mapc_region_residential_sales_clean_aggregated.c
   useEffect(() => {
     const sim = d3.forceSimulation()
       // Use moderate .strength(0.05) for X & Y like "original"
-      .force("x", d3.forceX(clusterX).strength(0.05))
-      .force("y", d3.forceY(clusterY).strength(0.05))
+      .force("x", d3.forceX(clusterX).strength(0.04))
+      .force("y", d3.forceY(clusterY).strength(0.04))
       .force("collision", d3.forceCollide(COLLISION_RADIUS))
       // Increase damping to better match original comment about 0.2-0.3 range
       .velocityDecay(0.3)   // Increased from 0.2 to 0.3
@@ -819,7 +819,7 @@ function FlowChart({ csvUrl = "/mapc_region_residential_sales_clean_aggregated.c
             opacity={hoverState.house ? 1 : 0}
             pointerEvents="none"
           >
-            Boston Home Price Index ({getDisplayTimePoint().toFixed(2)}):
+            Boston Home Price Index:
           </text>
           <text
             x={SPAWN_X}
