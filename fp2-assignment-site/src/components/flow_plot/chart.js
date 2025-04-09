@@ -29,7 +29,7 @@ function FlowChart({ csvUrl = "/mapc_region_residential_sales_clean_aggregated.c
   const CANVAS_WIDTH = 800;
   
   // Cluster configuration
-  const CLUSTER_CIRCLE_RADIUS = 130;
+  const CLUSTER_CIRCLE_RADIUS = 135;
   const CLUSTER_CIRCLE_STROKE_WIDTH = 2;
   
   // Define spawning point coordinates
