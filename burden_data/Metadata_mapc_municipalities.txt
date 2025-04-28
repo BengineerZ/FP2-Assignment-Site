@@ -1,0 +1,34 @@
+Title: Massachusetts Municipal Boundaries
+Table: mapc_municipalities
+Type: geojson
+
+Data Source:
+Massachusetts Municipal Boundaries:
+    Source: MassGIS
+    Referring URL: https://datacommon.mapc.org/browser/datasets/390
+    Last Updated: March 2017
+
+Description:
+This dataset provides polygon representations of municipal boundaries for the 351 communities in the Commonwealth of Massachusetts. It was developed to maintain an up-to-date version of town boundaries, with specific focus on the 101 cities and towns in Metro Boston covered by MAPC. Some boundaries could not be definitively mapped due to legislative ambiguities, and these are noted within the attribute information.
+
+Attributes:
+    objectid:
+        Type: Integer
+        Description: Internal feature number.
+        Example: 4
+
+    muni_id:
+        Type: Integer
+        Description: Unique municipal identifier.
+        Example: 92
+
+    municipal:
+        Type: String
+        Description: The name of the municipality.
+        Example: Essex
+
+    geometry:
+        Type: GeoJSON MultiPolygon
+        Description: The geographic representation of the municipal boundary.
+        Example: MULTIPOLYGON (((259231.582 936048.315, 259275.092 936028.815, 259311.592 936048.315)))
+
