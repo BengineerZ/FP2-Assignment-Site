@@ -50,10 +50,8 @@ const ScrollLine = () => {
         className='info-container'
         style={{ opacity: showInfoContainer ? 1 : 0 }}
       >
-        Speculation, or the practice of housing investment for profit generation, has been a major part of the Boston housing ecosystem. In our analysis, we seek to understand the impact of speculation on housing availability and prices as well as the mechanisms by which speculation is causing disproportionate impact on the affordable housing market. We start our exploration with a visualization showing the profit generation of speculators and non-investors alongside the S&P Boston, MA Home Pricing Index (BOXRSA). 
-        
-        You will notice certain trends about the data, including large drops in profits during the 2008 recession and a steady increase in investor profits over time. We also see that the BOXRSA has been steadily increasing over time, indicating that housing prices are rising. This is a concerning trend, as it suggests that speculation is driving up housing prices and making it more difficult for people to afford homes.
-      </p>
+        Speculative investment - <strong>Speculation</strong> - involves purchasing properties primarily to profit from rapid increases in their value for quick resale, rather than for long-term use or rental income, often contributing to <strong>price inflation and market instability</strong>.
+        </p>
     </div>
   );
 };

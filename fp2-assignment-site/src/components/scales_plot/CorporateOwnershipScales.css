@@ -1,0 +1,159 @@
+.corp-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .top-row {
+    display: flex;
+    gap: 16px;
+    height: 100%;
+  }
+  
+  .map-wrapper,
+  .scale-wrapper {
+    /* border: 1px solid #ddd; */
+    border-radius: 8px;
+    /* box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); */
+    overflow: hidden;
+  }
+  
+  .map-wrapper {
+    border: 8px solid #bfbfbf;
+    flex: 1 1 0;
+    height: 100%; /* ensure wrapper has height so Leaflet can fill */
+  }
+  
+  /* NEW: force the Leaflet container to fill its parent */
+  .map {
+    height: 100% !important;
+    width: 100% !important;
+  }
+  
+  .scale-wrapper {
+    width: 300px;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .timeline {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;        /* pushes map row down */
+  }
+  
+  /* pretty slider (works in modern browsers) */
+  .timeline__slider {
+    flex: 1;
+    appearance: none;
+    height: 4px;
+    background: #d0d3e0;
+    border-radius: 2px;
+    outline: none;
+  }
+  
+  .timeline__slider::-webkit-slider-thumb {
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #2a6af7;
+    cursor: pointer;
+    border: none;
+  }
+  .timeline__slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #2a6af7;
+    cursor: pointer;
+    border: none;
+  }
+  
+  /* big, prominent year number */
+  .timeline__year {
+    min-width: 60px;
+    text-align: right;
+    font: 600 1.4rem/1 'Inter', sans-serif;
+    color: #2a2d38;
+  }
+  
+  .reset-btn {
+    margin-top: 4px;
+    font-size: 14px;
+    text-decoration: underline;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+  }
+  
+  /* Scale colors */
+  .scale-svg .scale-base {
+    fill: #555;
+  }
+  .scale-svg .scale-column {
+    fill: #777;
+  }
+  .scale-svg .scale-beam {
+    fill: #777;
+  }
+  .scale-svg .scale-pan {
+    fill: #999;
+  }
+
+  /* --- Scale SVG Styles --- */
+.scale-svg {
+    width: 100%;
+    height: 100%;
+  }
+  
+  .scale-base {
+    fill: #8a7967; /* Wood/stone color */
+    stroke: #5a4a37;
+    stroke-width: 1;
+  }
+  
+  .scale-column {
+    fill: #a0a0a0; /* Grey stone/metal */
+    stroke: #606060;
+    stroke-width: 1;
+  }
+  
+  .scale-pivot-deco {
+    fill: #444; /* Dark decoration */
+  }
+  
+  .scale-beam {
+    fill: #c0c0c0; /* Silver/metal */
+    stroke: #707070;
+    stroke-width: 1.5;
+  }
+  
+  .scale-pan {
+    fill: #d4af37; /* Brass/gold color */
+    stroke: #a47f07;
+    stroke-width: 1.5;
+    fill-opacity: 0.8;
+  }
+  
+  .scale-chain {
+    stroke: #555; /* Dark chain color */
+    stroke-width: 1.5;
+    stroke-linecap: round;
+  }
+  
+  /* --- Animation --- */
+  .scale-moving-parts {
+    /* Smooth transition for the rotation */
+    transition: transform 0.4s ease-in-out;
+  }
+  
+  /* Optional: Add slight hover effect on pans */
+  .scale-pan-assembly:hover .scale-pan {
+      fill-opacity: 1.0;
+      cursor: default; /* Indicate it's not clickable */
+  }
