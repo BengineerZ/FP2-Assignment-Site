@@ -5,6 +5,8 @@ import Flow from "./components/flow_plot/Flow";
 import DevProc from './components/dev_process/DevProc';
 import ScrollLine from './components/line_connector/ScrollLineConnector';
 import BarChart from './components/bar_chart/BarChart';
+// import Burden from './components/burden_plot/Burden';
+
 
 function App() {
   return (
@@ -12,7 +14,6 @@ function App() {
      
       <div className="wrapper">
       <Navigation />
-      
       <Header />
       <ScrollLine />
       <Flow />
