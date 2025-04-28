@@ -607,9 +607,9 @@ function HousingDashboard() {
             fontSize: '14px',
             fontWeight: 'bold',
             cursor: 'pointer',
-            boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
+            // boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
             minWidth: '260px',
-            lineHeight: '1.4'
+            lineHeight: '1.2'
           }}
         >
           <option value="cost">% change rent cost‑burden</option>
