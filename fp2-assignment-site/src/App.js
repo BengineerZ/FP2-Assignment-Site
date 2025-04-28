@@ -41,9 +41,10 @@ function App() {
       <HousingCostsBlock />
 
       <Flow />
-
       
       <EvictionSection />
+
+      <Burden />
           
       <MinoritySection />
      
