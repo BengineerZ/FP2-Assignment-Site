@@ -164,7 +164,7 @@ const CorporateOwnershipScales = ({ csvUrl, geoJsonUrl, width = 900, height = 60
     const base = baselineRate.get(key) || 0.00001;
     // Ensure current rate isn't NaN or undefined before division
     const current = currentRate || 0;
-    return current / base;
+    return current / base ;
   }, [baselineRate, currentRate, selectedRegion, year]);
 
   const years = useMemo(
@@ -345,7 +345,7 @@ const CorporateOwnershipScales = ({ csvUrl, geoJsonUrl, width = 900, height = 60
             <ProfileCard
             region={selectedRegion}
             ratio={ratio}
-            currentRate={currentRate}
+            currentRate={(currentRate-0.6)-0.06}
             onClose={() => {
                 setSelectedRegion(null);
                 zoomToFull();
