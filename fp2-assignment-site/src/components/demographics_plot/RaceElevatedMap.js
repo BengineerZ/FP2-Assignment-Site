@@ -437,7 +437,7 @@ export default function RaceElevatedMap() {
   /* UI --------------------------------------------------------*/
   return (
     <>
-      <div className="race-picker">
+      <div className="race-picker" id='race'>
         <select value={raceKey} onChange={e=>setRaceKey(e.target.value)}>
           {Object.entries(RACES).map(([k,{label}]) =>
             <option key={k} value={k}>{label}</option>)}
