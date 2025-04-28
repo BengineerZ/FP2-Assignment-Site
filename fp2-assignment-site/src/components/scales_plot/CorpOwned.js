@@ -11,7 +11,7 @@ const CorpOwned = () => {
       <h4>How have the corporate ownership rates of housing in the Boston area changed over time, and how does this affect rising housing costs?</h4>
       <CorporateOwnershipScales
         csvUrl={ `${process.env.PUBLIC_URL}/scale_data/corp_vs_own_rate.csv` }
-        geoJsonUrl={ `${process.env.PUBLIC_URL}/scale_data/mass-municipalities.geojson` }
+        geoJsonUrl={ `${process.env.PUBLIC_URL}/demographics/boston.geojson` }
         width={1000}
         height={600}
       />

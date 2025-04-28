@@ -10,7 +10,7 @@ import ProfileCard from "./ProfileCard";
 /* -----------------------------------------------------------
    Helpers
 ------------------------------------------------------------*/
-const REGION_PROPS = ["massgis_name", "census_name", "NAME"];
+const REGION_PROPS = ["massgis_name", "census_name", "NAME", 'name'];
 const getRegionName = (props) => {
   for (const key of REGION_PROPS) {
     if (props[key]) return props[key].toUpperCase();
@@ -20,11 +20,11 @@ const getRegionName = (props) => {
 
 // Full‑metro extent and its visual centre (for initial view)
 const FULL_BOUNDS = [
-  [42.0, -71.7],
-  [42.8, -70.9],
+  [42.30, -71.15], // Southwest corner
+  [42.40, -71.00], // Northeast corner
 ];
-const FULL_CENTER = [42.4, -71.3];
-const FULL_ZOOM = 9; // initial zoom
+const FULL_CENTER = [42.35, -71.075]; // Approximate center of Boston
+const FULL_ZOOM = 11; // Adjusted zoom level for a closer view
 
 /** SVG weighing scale */
 /** SVG weighing scale - Prettier & Animated */
