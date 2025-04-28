@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './Navigation.css'; // We'll add this CSS file next.
-const sections = ['home', 'viz', 'burden', 'bar', 'race']; // section IDs
+const sections = ['home', 'corp', 'bar', 'viz', 'burden', 'race']; // section IDs
 export default function NavigationDots() {
   const [active, setActive] = useState('');
 
