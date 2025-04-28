@@ -34,6 +34,12 @@ function HousingDashboard() {
   const [metric, setMetric] = useState('cost');    // choropleth toggle
   const [hoverZips, setHoverZips] = useState(new Set());
   const [lockedZips, setLockedZips] = useState([]);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState(null);
+  const [dragEnd, setDragEnd] = useState(null);
+  const [isScatterDragging, setIsScatterDragging] = useState(false);
+  const [scatterDragStart, setScatterDragStart] = useState(null);
+  const [scatterDragEnd, setScatterDragEnd] = useState(null);
 
   const mapRef = useRef(null);
   const scatterRef = useRef(null);
@@ -188,6 +194,106 @@ function HousingDashboard() {
         });
       });
 
+    // Create drag selection rect for the map with improved visibility (temporarily bright red for testing)
+    const dragRect = svg.append('rect')
+      .attr('class', 'drag-selection')
+      .attr('fill', 'rgba(255, 0, 0, 0.4)')
+      .attr('stroke', 'red')
+      .attr('stroke-width', 1.5) // Increased from 1 to 1.5
+      .attr('stroke-dasharray', '3,3') // Add dashed line for better visibility
+      .style('display', 'none')
+      .style('pointer-events', 'none'); // Make sure it doesn't interfere with other interactions
+    dragRect.raise();
+
+    // MouseDown event to start drag
+    svg.on('mousedown', function(event) {
+      // Only start drag if we're not on a path
+      if (event.target.tagName !== 'path') {
+        const [x, y] = d3.pointer(event);
+        setIsDragging(true);
+        setDragStart([x, y]);
+        dragRect
+          .attr('x', x)
+          .attr('y', y)
+          .attr('width', 0)
+          .attr('height', 0)
+          .style('display', null);
+        
+        // Clear previous selections if not holding shift
+        if (!event.shiftKey) {
+          setLockedZips([]);
+        }
+      }
+    });
+
+    // MouseMove event to update drag
+    svg.on('mousemove', function(event) {
+      if (!isDragging) return;
+      
+      const [x0, y0] = dragStart;
+      const [x1, y1] = d3.pointer(event);
+      
+      dragRect
+        .attr('x', Math.min(x0, x1))
+        .attr('y', Math.min(y0, y1))
+        .attr('width', Math.abs(x1 - x0))
+        .attr('height', Math.abs(y1 - y0));
+      
+      setDragEnd([x1, y1]);
+    });
+
+    // MouseUp event to end drag and select municipalities
+    svg.on('mouseup', function(event) {
+      if (!isDragging) return;
+      
+      // Hide drag rectangle
+      dragRect.style('display', 'none');
+      
+      if (dragStart && dragEnd) {
+        const [x0, y0] = dragStart;
+        const [x1, y1] = dragEnd;
+        
+        // Check if it's just a click (very small rectangle)
+        if (Math.abs(x1 - x0) < 5 && Math.abs(y1 - y0) < 5) {
+          // If it's a click on background, deselect everything
+          if (event.target.tagName !== 'path') {
+            setLockedZips([]);
+          }
+        } else {
+          // Find municipalities in the drag rectangle
+          const selectedZips = new Set();
+          geo.features.forEach(f => {
+            // Check if this municipality is in the drag rectangle
+            const bounds = path.bounds(f);
+            const inDrag = !(
+              bounds[1][0] < Math.min(x0, x1) || 
+              bounds[0][0] > Math.max(x0, x1) || 
+              bounds[1][1] < Math.min(y0, y1) || 
+              bounds[0][1] > Math.max(y0, y1)
+            );
+            
+            if (inDrag) {
+              const muni = f.properties.municipal;
+              const zips = muni2zips.current[muni] || [];
+              zips.forEach(z => selectedZips.add(z));
+            }
+          });
+          
+          // Update lockedZips with selected municipalities
+          setLockedZips(prev => {
+            const result = new Set(prev);
+            selectedZips.forEach(zip => result.add(zip));
+            return Array.from(result);
+          });
+        }
+      }
+      
+      // Reset drag state
+      setIsDragging(false);
+      setDragStart(null);
+      setDragEnd(null);
+    });
+
     // Create a legend
     const legendGroup = svg.append('g')
       .attr('class', 'legend')
@@ -270,7 +376,7 @@ function HousingDashboard() {
       .attr('fill', 'rgba(255, 255, 255, 0.8)')
       .attr('rx', 5)
       .attr('ry', 5);
-  }, [geo, muniRecords, metric, choropleth, mapR]);
+  }, [geo, muniRecords, metric, choropleth, mapR, isDragging, dragStart, dragEnd]);
 
   // ----- lightweight hover updates (avoid full map redraw) -------------
   useEffect(() => {
@@ -445,6 +551,100 @@ function HousingDashboard() {
         });
       });
 
+    // Create drag selection rect for the scatter plot
+    const dragRect = g.append('rect')
+      .attr('class', 'drag-selection')
+      .attr('fill', 'rgba(100, 150, 230, 0.2)')
+      .attr('stroke', 'rgba(100, 150, 230, 0.8)')
+      .attr('stroke-width', 1)
+      .style('pointer-events', 'none')   // prevent the selection box from capturing pointer events
+      .style('display', 'none');
+
+    // MouseDown event to start drag
+    g.on('mousedown', function(event) {
+      // Only start drag if not on a circle
+      if (event.target.tagName !== 'circle') {
+        const [xPos, yPos] = d3.pointer(event, g.node());
+        setIsScatterDragging(true);
+        setScatterDragStart([xPos, yPos]);
+        dragRect
+          .attr('x', xPos)
+          .attr('y', yPos)
+          .attr('width', 0)
+          .attr('height', 0)
+          .style('display', null);
+        
+        // Clear previous selections if not holding shift
+        if (!event.shiftKey) {
+          setLockedZips([]);
+        }
+      }
+    });
+
+    // MouseMove event to update drag
+    g.on('mousemove', function(event) {
+      if (!isScatterDragging) return;
+      
+      const [x0, y0] = scatterDragStart;
+      const [x1, y1] = d3.pointer(event, g.node());
+      
+      dragRect
+        .attr('x', Math.min(x0, x1))
+        .attr('y', Math.min(y0, y1))
+        .attr('width', Math.abs(x1 - x0))
+        .attr('height', Math.abs(y1 - y0));
+      
+      setScatterDragEnd([x1, y1]);
+    });
+
+    // MouseUp event to end drag and select points
+    g.on('mouseup', function(event) {
+      if (!isScatterDragging) return;
+      
+      // Hide drag rectangle
+      dragRect.style('display', 'none');
+      
+      if (scatterDragStart && scatterDragEnd) {
+        const [x0, y0] = scatterDragStart;
+        const [x1, y1] = scatterDragEnd;
+        
+        // Check if it's just a click (very small rectangle)
+        if (Math.abs(x1 - x0) < 5 && Math.abs(y1 - y0) < 5) {
+          // If it's a click on background, deselect everything
+          if (event.target.tagName !== 'circle') {
+            setLockedZips([]);
+          }
+        } else {
+          // Find points in the drag rectangle
+          const selectedZips = new Set();
+          muniRecords.forEach(d => {
+            const px = x(d.investorChange);
+            const py = y(d.evictions);
+            if (
+              px >= Math.min(x0, x1) &&
+              px <= Math.max(x0, x1) &&
+              py >= Math.min(y0, y1) &&
+              py <= Math.max(y0, y1)
+            ) {
+              d.zips.forEach(z => selectedZips.add(z));
+            }
+          });
+          
+          // Update lockedZips with selected points
+          setLockedZips(prev => {
+            const result = new Set(prev);
+            selectedZips.forEach(zip => result.add(zip));
+            return Array.from(result);
+          });
+        }
+      }
+      
+      // Reset drag state
+      setIsScatterDragging(false);
+      setScatterDragStart(null);
+      setScatterDragEnd(null);
+    });
+
     // Add color legend for rent burden below the scatter plot
     const legendHeight = 15;
     const legendWidth = w * 0.4;
@@ -573,7 +773,7 @@ function HousingDashboard() {
     //   .attr('height', 5)
     //   .attr('fill', 'red');
 
-  }, [muniRecords, hoverZips, scatterR]);
+  }, [muniRecords, hoverZips, scatterR, isScatterDragging, scatterDragStart, scatterDragEnd]);
 
   //--------------------------------------------------------------------
   // Update scatter strokes on hoverZips change
@@ -586,6 +786,64 @@ function HousingDashboard() {
         .attr('stroke', d => d.zips && d.zips.some(z => hoverZips.has(z)) ? '#000' : '#444');
     }
   }, [hoverZips]);
+
+  //--------------------------------------------------------------------
+  // Highlight locked selections in visualizations
+  //--------------------------------------------------------------------
+  useEffect(() => {
+    // Update map polygons to show locked selections
+    if (geo && muniRecords) {
+      const lockedSet = new Set(lockedZips);
+      d3.select(mapRef.current).selectAll('path')
+        .attr('fill-opacity', d => {
+          const zips = muni2zips.current[d.properties.municipal] || [];
+          return lockedZips.length > 0 && !zips.some(z => lockedSet.has(z)) ? 0.3 : 1;
+        });
+    }
+    
+    // Update scatter points to show locked selections
+    const scatterG = d3.select(scatterRef.current).select('g');
+    if (!scatterG.empty()) {
+      const lockedSet = new Set(lockedZips);
+      scatterG.selectAll('circle')
+        .attr('opacity', d => {
+          return lockedZips.length > 0 && !d.zips.some(z => lockedSet.has(z)) ? 0.2 : 0.8;
+        })
+        .attr('stroke', d => {
+          return d.zips.some(z => 
+            lockedSet.has(z) || hoverZips.has(z)
+          ) ? '#000' : '#444';
+        })
+        .attr('stroke-width', d => {
+          return d.zips.some(z => 
+            lockedSet.has(z) || hoverZips.has(z)
+          ) ? 2 : 0.4;
+        });
+    }
+  }, [lockedZips, geo, muniRecords, hoverZips]);
+
+  //--------------------------------------------------------------------
+  // Add a side effect to cancel drag if mouse leaves the window
+  //--------------------------------------------------------------------
+  useEffect(() => {
+    const handleMouseUp = () => {
+      if (isDragging || isScatterDragging) {
+        if (isDragging) {
+          setIsDragging(false);
+          setDragStart(null);
+          setDragEnd(null);
+        }
+        if (isScatterDragging) {
+          setIsScatterDragging(false);
+          setScatterDragStart(null);
+          setScatterDragEnd(null);
+        }
+      }
+    };
+    
+    window.addEventListener('mouseup', handleMouseUp);
+    return () => window.removeEventListener('mouseup', handleMouseUp);
+  }, [isDragging, isScatterDragging]);
 
   //--------------------------------------------------------------------
   // Render
