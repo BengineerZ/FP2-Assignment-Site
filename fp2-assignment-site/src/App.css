@@ -1,3 +1,109 @@
+@import "mapbox-gl/dist/mapbox-gl.css";   /* ← remove the “~”  */
+
+/* centre the entire row */
+.map-row {
+  display: flex;
+  gap: 12px;
+  justify-content: center;   /* ← centres the flex children */
+  max-width: 1700px;         /* optional guard on ultrawide monitors */
+  margin: 0 auto;            /* centre the row block itself */
+}
+
+/* each individual map */
+.map-box {
+  flex: 0 0 1000px;  /* fixed 800-px panes; change to 1 1 0 if you want shrink-able */
+  height: 800px;
+  position: relative;
+}
+
+.race-picker               { margin: 0 auto 26px; position: relative; }
+.race-picker select        {
+  /* size                                                     */
+  font: 500 1.15rem/1.35 Georgia, serif;
+  padding: 10px 54px 10px 20px;      /* room left + space for arrow */
+  min-width: 220px;
+
+  /* colours & surfaces                                       */
+  color:  #393636;
+  background: #fff8ed radial-gradient(#f9e7c9 0%, #fff8ed 70%) left/400% 400%;
+  border: 2px solid #d7d1c5;
+  border-radius: 10px;
+  box-shadow:
+        inset 0  1px  2px rgba(255,255,255,.8),
+              0  4px  8px rgba(0,0,0,.05);
+
+  /* behaviour                                                */
+  appearance: none;
+  cursor: pointer;
+  transition:
+      box-shadow   .2s ease,
+      background-position .25s ease;
+}
+.race-picker select:hover  {
+  background-position: right;
+  box-shadow:
+        inset 0  1px  2px rgba(255,255,255,.8),
+              0  6px 12px rgba(0,0,0,.08);
+}
+.race-picker select:focus  {
+  outline: none;
+  box-shadow:
+        0 0 0 3px #c1b59a55,
+        0  6px 12px rgba(0,0,0,.08);
+}
+
+/* graceful arrow built with borders – scales with font-size  */
+.race-picker::after        {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  right: 17px;                   /* aligns with right padding  */
+  top:   50%;
+  width:  0;
+  height: 0;
+  margin-top: -3px;
+  border-left:  6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top:   6px solid #393636;
+  opacity: .8;
+  transition: transform .25s ease;
+}
+
+.race-picker:hover::after  { transform: translateY(2px); }
+   
+
+
+/* ---------- demographic maps ---------- */
+.info-card {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 240px;
+  background: rgba(255, 248, 237, 0.93); /* paper colour */
+  padding: 14px 18px;
+  font-family: "Georgia Pro", serif;
+  line-height: 1.45;
+  box-shadow: 0 0 6px rgba(0,0,0,.15);
+  border-left: 1px solid #bbb;
+  z-index: 10;
+}
+.info-card h3 { margin: 0 0 10px 0; font-style: italic; }
+.info-card .x {
+  position: absolute; right: 10px; top: 8px;
+  cursor: pointer; font-weight: bold;
+}
+.left-pane  {                     /* left card sits over 1st map  */
+  left:  calc(50% - 800px - 6px); /* 800 px map  +  6 px half-gap */
+}
+.right-pane {                     /* right card over 2nd map      */
+  left:  calc(50% + 800px + 6px - 240px); /* centre + map + gap – card-w */
+}
+.single-pane {                     /* right card over 2nd map      */
+  left:  calc(50% + 460px + 6px - 240px); /* centre + map + gap – card-w */
+}
+
+.map-row { position: relative; }   /* anchor card */
+
 .App {
   text-align: center;
 }
