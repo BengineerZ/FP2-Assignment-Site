@@ -34,10 +34,22 @@ function HousingDashboard() {
   const [metric, setMetric] = useState('cost');    // choropleth toggle
   const [hoverZips, setHoverZips] = useState(new Set());
   const [lockedZips, setLockedZips] = useState([]);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState(null);
+  const [dragEnd, setDragEnd] = useState(null);
+  const [isScatterDragging, setIsScatterDragging] = useState(false);
+  const [scatterDragStart, setScatterDragStart] = useState(null);
+  const [scatterDragEnd, setScatterDragEnd] = useState(null);
 
   const mapRef = useRef(null);
   const scatterRef = useRef(null);
   const muni2zips = useRef({});                    // { muni : [zip,…] }
+  // Remember the selection state at drag‑start so we can add to it while dragging
+  const dragBaseLockedZips     = useRef([]);
+  const dragShiftPressed       = useRef(false);
+  const scatterBaseLockedZips  = useRef([]);
+  const scatterShiftPressed    = useRef(false);
+  const lastDragLockedZips     = useRef([]);
 
   //--------------------------------------------------------------------
   // Load & prepare data  ------------------------------------------------
@@ -109,6 +121,11 @@ function HousingDashboard() {
 
     const proj = d3.geoMercator().fitSize([MAP_W, MAP_H], geo);
     const path = d3.geoPath().projection(proj);
+    // Pre‑compute projected bounding boxes to avoid heavy path.bounds calls during drag
+    const boundsCache = geo.features.map(f => ({
+      muni: f.properties.municipal,
+      bounds: path.bounds(f)   // [[x0,y0],[x1,y1]]
+    }));
 
     // Add text label for municipality name on hover - bigger and lower position
     const muniLabel = svg.append('text')
@@ -187,6 +204,138 @@ function HousingDashboard() {
           return Array.from(s);
         });
       });
+
+    // Create drag selection rect for the map with improved visibility (temporarily bright red for testing)
+    const dragRect = svg.append('rect')
+      .attr('class', 'drag-selection')
+      .attr('fill', 'rgba(255, 0, 0, 0.4)')
+      .attr('stroke', 'red')
+      .attr('stroke-width', 1.5) // Increased from 1 to 1.5
+      .attr('stroke-dasharray', '3,3') // Add dashed line for better visibility
+      .style('display', 'none')
+      .style('pointer-events', 'none'); // Make sure it doesn't interfere with other interactions
+    dragRect.raise();
+
+    // MouseDown event to start drag
+    svg.on('mousedown', function(event) {
+      // Only start drag if we're not on a path
+      if (event.target.tagName !== 'path') {
+        const [x, y] = d3.pointer(event);
+        setIsDragging(true);
+        setDragStart([x, y]);
+        dragRect
+          .attr('x', x)
+          .attr('y', y)
+          .attr('width', 0)
+          .attr('height', 0)
+          .style('display', null);
+        
+        // Remember current selection and whether Shift was held
+        dragBaseLockedZips.current = lockedZips;
+        dragShiftPressed.current   = event.shiftKey;
+        // Clear previous selections if not holding shift
+        if (!event.shiftKey) {
+          setLockedZips([]);
+        }
+      }
+    });
+
+    // MouseMove event to update drag
+    svg.on('mousemove', function(event) {
+      if (!isDragging) return;
+      
+      const [x0, y0] = dragStart;
+      const [x1, y1] = d3.pointer(event);
+      
+      dragRect
+        .attr('x', Math.min(x0, x1))
+        .attr('y', Math.min(y0, y1))
+        .attr('width', Math.abs(x1 - x0))
+        .attr('height', Math.abs(y1 - y0));
+      
+      setDragEnd([x1, y1]);
+
+      // ---- live highlight of municipalities during drag ----
+      const selZips = new Set();
+      boundsCache.forEach(({ muni, bounds }) => {
+        const inDrag = !(
+          bounds[1][0] < Math.min(x0, x1) ||
+          bounds[0][0] > Math.max(x0, x1) ||
+          bounds[1][1] < Math.min(y0, y1) ||
+          bounds[0][1] > Math.max(y0, y1)
+        );
+        if (inDrag) {
+          (muni2zips.current[muni] || []).forEach(z => selZips.add(z));
+        }
+      });
+      const base   = dragShiftPressed.current ? dragBaseLockedZips.current : [];
+      const merged = new Set(base);
+      selZips.forEach(z => merged.add(z));
+
+      // Only update React state if the selection actually changed
+      const mergedArr = Array.from(merged).sort();
+      const lastArr   = lastDragLockedZips.current;
+      if (
+        mergedArr.length !== lastArr.length ||
+        mergedArr.some((z, i) => z !== lastArr[i])
+      ) {
+        lastDragLockedZips.current = mergedArr;
+        setLockedZips(mergedArr);
+      }
+    });
+
+    // MouseUp event to end drag and select municipalities
+    svg.on('mouseup', function(event) {
+      if (!isDragging) return;
+      
+      // Hide drag rectangle
+      dragRect.style('display', 'none');
+      
+      if (dragStart && dragEnd) {
+        const [x0, y0] = dragStart;
+        const [x1, y1] = dragEnd;
+        
+        // Check if it's just a click (very small rectangle)
+        if (Math.abs(x1 - x0) < 5 && Math.abs(y1 - y0) < 5) {
+          // If it's a click on background, deselect everything
+          if (event.target.tagName !== 'path') {
+            setLockedZips([]);
+          }
+        } else {
+          // Find municipalities in the drag rectangle
+          const selectedZips = new Set();
+          geo.features.forEach(f => {
+            // Check if this municipality is in the drag rectangle
+            const bounds = path.bounds(f);
+            const inDrag = !(
+              bounds[1][0] < Math.min(x0, x1) || 
+              bounds[0][0] > Math.max(x0, x1) || 
+              bounds[1][1] < Math.min(y0, y1) || 
+              bounds[0][1] > Math.max(y0, y1)
+            );
+            
+            if (inDrag) {
+              const muni = f.properties.municipal;
+              const zips = muni2zips.current[muni] || [];
+              zips.forEach(z => selectedZips.add(z));
+            }
+          });
+          
+          // Update lockedZips with selected municipalities
+          setLockedZips(prev => {
+            const result = new Set(prev);
+            selectedZips.forEach(zip => result.add(zip));
+            return Array.from(result);
+          });
+        }
+      }
+      
+      // Reset drag state
+      setIsDragging(false);
+      setDragStart(null);
+      setDragEnd(null);
+      lastDragLockedZips.current = [];
+    });
 
     // Create a legend
     const legendGroup = svg.append('g')
@@ -270,7 +419,7 @@ function HousingDashboard() {
       .attr('fill', 'rgba(255, 255, 255, 0.8)')
       .attr('rx', 5)
       .attr('ry', 5);
-  }, [geo, muniRecords, metric, choropleth, mapR]);
+  }, [geo, muniRecords, metric, choropleth, mapR, isDragging, dragStart, dragEnd]);
 
   // ----- lightweight hover updates (avoid full map redraw) -------------
   useEffect(() => {
@@ -320,6 +469,11 @@ function HousingDashboard() {
 
     const svg = d3.select(scatterRef.current);
     svg.selectAll('*').remove();
+    // Prevent text selection inside the scatter SVG
+    svg
+      .style('user-select', 'none')
+      .style('-webkit-user-select', 'none')
+      .style('-ms-user-select', 'none');
 
     // Increase bottom margin even further to prevent text cutoff
     const m = { t: 40, r: 30, b: 150, l: 70 };
@@ -444,6 +598,118 @@ function HousingDashboard() {
           return Array.from(s);
         });
       });
+
+    // Create drag selection rect for the scatter plot
+    const dragRect = g.append('rect')
+      .attr('class', 'drag-selection')
+      .attr('fill', 'rgba(100, 150, 230, 0.2)')
+      .attr('stroke', 'rgba(100, 150, 230, 0.8)')
+      .attr('stroke-width', 1)
+      .style('pointer-events', 'none')   // prevent the selection box from capturing pointer events
+      .style('display', 'none');
+
+    // MouseDown event to start drag (attach to svg)
+    svg.on('mousedown', function(event) {
+      // Only start drag if not on a circle
+      if (event.target.tagName !== 'circle') {
+        const [xPos, yPos] = d3.pointer(event, g.node());   // pointer relative to plot area
+        setIsScatterDragging(true);
+        setScatterDragStart([xPos, yPos]);
+        dragRect
+          .attr('x', xPos)
+          .attr('y', yPos)
+          .attr('width', 0)
+          .attr('height', 0)
+          .style('display', null);
+
+        // Remember current selection and whether Shift was held
+        scatterBaseLockedZips.current = lockedZips;
+        scatterShiftPressed.current   = event.shiftKey;
+        // Clear previous selections if not holding shift
+        if (!event.shiftKey) {
+          setLockedZips([]);
+        }
+      }
+    });
+
+    // MouseMove event to update drag (attach to svg)
+    svg.on('mousemove', function(event) {
+      if (!isScatterDragging) return;
+
+      const [x0, y0] = scatterDragStart;
+      const [x1, y1] = d3.pointer(event, g.node());
+
+      dragRect
+        .attr('x', Math.min(x0, x1))
+        .attr('y', Math.min(y0, y1))
+        .attr('width', Math.abs(x1 - x0))
+        .attr('height', Math.abs(y1 - y0));
+
+      setScatterDragEnd([x1, y1]);
+
+      // ---- live highlight of dots during drag ----
+      const selZips = new Set();
+      muniRecords.forEach(d => {
+        const px = x(d.investorChange);
+        const py = y(d.evictions);
+        if (
+          px >= Math.min(x0, x1) && px <= Math.max(x0, x1) &&
+          py >= Math.min(y0, y1) && py <= Math.max(y0, y1)
+        ) {
+          d.zips.forEach(z => selZips.add(z));
+        }
+      });
+      const base   = scatterShiftPressed.current ? scatterBaseLockedZips.current : [];
+      const merged = new Set(base);
+      selZips.forEach(z => merged.add(z));
+      setLockedZips(Array.from(merged));
+    });
+
+    // MouseUp event to end drag and select points (attach to svg)
+    svg.on('mouseup', function(event) {
+      if (!isScatterDragging) return;
+
+      // Hide drag rectangle
+      dragRect.style('display', 'none');
+
+      if (scatterDragStart && scatterDragEnd) {
+        const [x0, y0] = scatterDragStart;
+        const [x1, y1] = scatterDragEnd;
+
+        // Check if it's just a click (very small rectangle)
+        if (Math.abs(x1 - x0) < 5 && Math.abs(y1 - y0) < 5) {
+          // If it's a click on background, deselect everything
+          if (event.target.tagName !== 'circle') {
+            setLockedZips([]);
+          }
+        } else {
+          // Find points in the drag rectangle
+          const selectedZips = new Set();
+          muniRecords.forEach(d => {
+            const px = x(d.investorChange);
+            const py = y(d.evictions);
+            if (
+              px >= Math.min(x0, x1) && px <= Math.max(x0, x1) &&
+              py >= Math.min(y0, y1) && py <= Math.max(y0, y1)
+            ) {
+              d.zips.forEach(z => selectedZips.add(z));
+            }
+          });
+
+          // Update lockedZips with selected points
+          setLockedZips(prev => {
+            const result = new Set(prev);
+            selectedZips.forEach(zip => result.add(zip));
+            return Array.from(result);
+          });
+        }
+      }
+
+      // Reset drag state
+      setIsScatterDragging(false);
+      setScatterDragStart(null);
+      setScatterDragEnd(null);
+    });
 
     // Add color legend for rent burden below the scatter plot
     const legendHeight = 15;
@@ -573,7 +839,7 @@ function HousingDashboard() {
     //   .attr('height', 5)
     //   .attr('fill', 'red');
 
-  }, [muniRecords, hoverZips, scatterR]);
+  }, [muniRecords, hoverZips, scatterR, isScatterDragging, scatterDragStart, scatterDragEnd]);
 
   //--------------------------------------------------------------------
   // Update scatter strokes on hoverZips change
@@ -586,6 +852,85 @@ function HousingDashboard() {
         .attr('stroke', d => d.zips && d.zips.some(z => hoverZips.has(z)) ? '#000' : '#444');
     }
   }, [hoverZips]);
+
+  //--------------------------------------------------------------------
+  // Highlight locked selections in visualizations
+  //--------------------------------------------------------------------
+  useEffect(() => {
+    // Update map polygons to show locked selections
+    if (geo && muniRecords) {
+      const lockedSet = new Set(lockedZips);
+      d3.select(mapRef.current).selectAll('path')
+        .attr('fill-opacity', d => {
+          const zips = muni2zips.current[d.properties.municipal] || [];
+          return lockedZips.length > 0 && !zips.some(z => lockedSet.has(z)) ? 0.3 : 1;
+        });
+    }
+    
+    // Update scatter points to show locked selections
+    const scatterG = d3.select(scatterRef.current).select('g');
+    if (!scatterG.empty()) {
+      const lockedSet = new Set(lockedZips);
+      scatterG.selectAll('circle')
+        .attr('opacity', d => {
+          return lockedZips.length > 0 && !d.zips.some(z => lockedSet.has(z)) ? 0.2 : 0.8;
+        })
+        .attr('stroke', d => {
+          return d.zips.some(z => 
+            lockedSet.has(z) || hoverZips.has(z)
+          ) ? '#000' : '#444';
+        })
+        .attr('stroke-width', d => {
+          return d.zips.some(z => 
+            lockedSet.has(z) || hoverZips.has(z)
+          ) ? 2 : 0.4;
+        });
+    }
+  }, [lockedZips, geo, muniRecords, hoverZips]);
+
+  //--------------------------------------------------------------------
+  // Add a side effect to cancel drag if mouse leaves the window
+  //--------------------------------------------------------------------
+  useEffect(() => {
+    const handleMouseUp = () => {
+      if (isDragging || isScatterDragging) {
+        if (isDragging) {
+          setIsDragging(false);
+          setDragStart(null);
+          setDragEnd(null);
+        }
+        if (isScatterDragging) {
+          setIsScatterDragging(false);
+          setScatterDragStart(null);
+          setScatterDragEnd(null);
+        }
+      }
+    };
+    
+    window.addEventListener('mouseup', handleMouseUp);
+    return () => window.removeEventListener('mouseup', handleMouseUp);
+  }, [isDragging, isScatterDragging]);
+
+  //--------------------------------------------------------------------
+  // Disable text selection during drag
+  //--------------------------------------------------------------------
+  useEffect(() => {
+    const bodyStyle = document.body.style;
+    if (isDragging || isScatterDragging) {
+      bodyStyle.userSelect = 'none';
+      bodyStyle.webkitUserSelect = 'none';
+      bodyStyle.msUserSelect = 'none';
+    } else {
+      bodyStyle.userSelect = '';
+      bodyStyle.webkitUserSelect = '';
+      bodyStyle.msUserSelect = '';
+    }
+    return () => {
+      bodyStyle.userSelect = '';
+      bodyStyle.webkitUserSelect = '';
+      bodyStyle.msUserSelect = '';
+    };
+  }, [isDragging, isScatterDragging]);
 
   //--------------------------------------------------------------------
   // Render
