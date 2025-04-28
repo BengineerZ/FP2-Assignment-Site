@@ -5,8 +5,8 @@ import * as d3 from "d3";
 
 mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_TOKEN;
 
-const CSV_URL = `${process.env.PUBLIC_URL}/boston_neighborhood_demographics_2010_2020.csv`;
-const GEO_URL = `${process.env.PUBLIC_URL}/boston.geojson`;
+const CSV_URL = `${process.env.PUBLIC_URL}/demographics/boston_neighborhood_demographics_2010_2020.csv`;
+const GEO_URL = `${process.env.PUBLIC_URL}/demographics/boston.geojson`;
 
 /* menu -> { label, csvSuffix }  */
 const RACES = {
