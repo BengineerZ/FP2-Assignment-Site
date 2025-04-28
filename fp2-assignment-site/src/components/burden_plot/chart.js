@@ -602,7 +602,7 @@ function HousingDashboard() {
           style={{
             padding: '8px 14px',
             borderRadius: '8px',
-            background: 'linear-gradient(180deg,#f9fbff 0%,#e7efff 100%)',
+            // background: 'linear-gradient(180deg,#f9fbff 0%,#e7efff 100%)',
             border: '1px solid #667',
             fontSize: '14px',
             fontWeight: 'bold',
@@ -618,7 +618,7 @@ function HousingDashboard() {
         </select>
       </div>
 
-      <div style={{ 
+      {/* <div style={{ 
         padding: '8px 16px',
         marginBottom: '12px',
         backgroundColor: 'rgba(255,248,220,0.7)',
@@ -631,14 +631,14 @@ function HousingDashboard() {
       }}>
         <span style={{ marginRight: '8px', fontSize: '18px' }}>💡</span>
         <span><strong>Tip:</strong> Hover over the map or data points to see relationships.</span>
-      </div>
+      </div> */}
 
       <div style={{ display: 'flex', gap: '18px' }}>
-        <svg ref={mapRef} width={MAP_W} height={MAP_H} style={{ border: '1px solid #ccc' }} />
+        <svg ref={mapRef} width={MAP_W} height={MAP_H} style={{ border: '0px solid #ccc' }} />
         <svg ref={scatterRef} width={SCATTER} height={SCATTER} />
       </div>
 
-      <div style={{ marginTop: '28px', fontSize: '14px', lineHeight: '1.5' }}>
+      {/* <div style={{ marginTop: '28px', fontSize: '14px', lineHeight: '1.5' }}>
         <h4 style={{ marginBottom: '8px' }}>Data sources</h4>
         <ul style={{ paddingLeft: '20px', margin: 0 }}>
           <li>IPUMS NHGIS, ACS 5‑year estimates 2009‑13 (dataset ds201) and 2019‑23 (dataset ds267) for renter cost‑burden metrics citeturn0file0turn0file1</li>
@@ -647,7 +647,7 @@ function HousingDashboard() {
           <li>Massachusetts Trial Court Electronic Case Access: no‑cause eviction filings (2020‑2024)</li>
           <li>MAPC <em>Municipalities</em> GeoJSON (simplified) for map polygons</li>
         </ul>
-      </div>
+      </div> */}
     </div>
   );
 }
