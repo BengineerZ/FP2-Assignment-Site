@@ -69,10 +69,15 @@
   transform: translate(-50%, -50%);
 }
 
+.info_wrapper {
+  position: relative;
+}
+
 .info-container {
   width: 600px;
   /* max-width: 400px; */
   /* display: flex; */
+  margin:0px;
   position: absolute;
   left: 50%;
   top: 50%;

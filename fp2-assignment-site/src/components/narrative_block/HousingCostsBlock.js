@@ -5,7 +5,7 @@ import { Citation } from '../citations/CitationsSystem';
 
 const HousingCostsBlock = () => {
   return (
-    <div className="narrative-block" >
+    <div className="inarrative-block" style={{ marginTop: "20px" }} >
       <h3>The Impacts of Speculation</h3>
 
       <p>Housing costs in Boston have surged alongside these ownership changes. <strong>Rents and home prices are at or near record highs</strong> – in fact, median rents in the region recently plateaued, 

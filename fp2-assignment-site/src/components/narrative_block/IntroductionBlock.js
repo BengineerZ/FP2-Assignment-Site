@@ -6,7 +6,7 @@ import { Citation } from '../citations/CitationsSystem';
 
 const IntroductionBlock = () => {
   return (
-    <div className="narrative-block" >
+    <div className="inarrative-block" >
       <h3>The Rise of Corporate Landlords</h3>
 
       <p>Over the past few decades, <strong>corporate ownership of housing in the Boston area has risen dramatically</strong>. A regional study by the Metropolitan Area 
@@ -22,8 +22,6 @@ const IntroductionBlock = () => {
     <p>    The figure in the following section provides a dynamic visualization of this trend, 
       illustrating the changes in corporate ownership in the Boston area over time through an interactive plot and timeline. <strong>See how the scales have shifted for yourself ...</strong> 
     </p>
-
-    <h5></h5>
 
     </div>
   );

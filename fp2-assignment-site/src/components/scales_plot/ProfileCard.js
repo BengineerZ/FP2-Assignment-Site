@@ -45,9 +45,8 @@ export default function ProfileCard({ region, ratio, currentRate, onClose }) {
             <strong>{(currentRate * 100).toFixed(1)} %</strong>
           </p>
           <p className="profile-card__text">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec eu
-            bibendum velit. Quisque venenatis, nunc sit amet facilisis pulvinar,
-            tellus nibh vulputate purus, at venenatis turpis odio at felis.
+            Average Housing Cost: <strong>N/A</strong><br/>
+            Example Home Listing: <strong>N/A</strong><br/>
           </p>
         </>
       )}

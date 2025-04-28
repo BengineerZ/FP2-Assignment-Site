@@ -1,0 +1,50 @@
+.help-indicator {
+    display: flex;
+    align-items: center;
+    position: relative;
+    padding: 8px 16px;
+    margin-bottom: 12px;
+    background-color: rgba(255, 248, 220, 0.7);
+    border: 1px solid #e0d0a0;
+    border-radius: 6px;
+    font-size: 15px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.help-icon {
+    cursor: pointer;
+    margin-right: 8px;
+    font-size: 18px;
+    color: #f0c808; /* Lightbulb color */
+}
+
+/* .help-text {
+    font-size: 1rem;
+} */
+
+.help-modal {
+    position: absolute;
+    top: 100%;
+    left: -50%;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    padding: 16px;
+    z-index: 1000;
+    width: 500px;
+}
+
+.help-modal-content {
+    position: relative;
+    padding: 16px;
+}
+
+.close-modal {
+    position: absolute;
+    top: 8px; /* Adjusted for proper alignment */
+    right: 8px; /* Adjusted for proper alignment */
+    cursor: pointer;
+    font-size: 1.2rem;
+    color: #888;
+}

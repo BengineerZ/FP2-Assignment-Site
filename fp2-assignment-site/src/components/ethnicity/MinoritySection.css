@@ -6,4 +6,13 @@
 .narrative-block {
     margin-top: 100px;
     margin-bottom: 100px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.text-container {
+  width: 800px;
+
 }
