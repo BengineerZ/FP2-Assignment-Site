@@ -672,7 +672,7 @@ useEffect(() => {
         <svg ref={scatterRef} width={SCATTER} height={SCATTER} />
       </div>
 
-      {lockedZips.length > 0 && (
+      {/* {lockedZips.length > 0 && (
         <div style={{ marginTop: '12px' }}>
           <h4>Selected ZIPs</h4>
           <table>
@@ -696,7 +696,7 @@ useEffect(() => {
             </tbody>
           </table>
         </div>
-      )}
+      )} */}
       <div style={{ marginTop: '28px', fontSize: '14px', lineHeight: '1.5' }}>
         <h4 style={{ marginBottom: '8px' }}>Data sources</h4>
         <ul style={{ paddingLeft: '20px', margin: 0 }}>
