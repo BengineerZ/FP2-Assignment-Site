@@ -4,7 +4,7 @@ import Header from "./components/Header_Component/Header";
 import Flow from "./components/flow_plot/Flow";
 import ScrollLine from './components/line_connector/ScrollLineConnector';
 import BarChart from './components/bar_chart/BarChart';
-// import Burden from './components/burden_plot/Burden';
+import Burden from './components/burden_plot/Burden';
 
 
 function App() {
@@ -16,6 +16,7 @@ function App() {
       <Header />
       <ScrollLine />
       <Flow />
+      <Burden />
       <BarChart />
       </div>
       

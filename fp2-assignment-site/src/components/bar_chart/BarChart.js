@@ -15,7 +15,7 @@ const BarChart = () => {
     //d3.csv("./data.csv", function(data) {
     //  console.log('CSV Data:', data); // Debugging: Check the loaded data
     //});
-    d3.csv('/nitishplot/income_data.csv').then((csvData) => {
+    d3.csv(`${process.env.PUBLIC_URL}/nitishplot/income_data.csv`).then((csvData) => {
       const parsedData = csvData.map(d => ({
         year: +d.year,
         line1: +d.line1, // Convert line1 to a number
@@ -23,6 +23,8 @@ const BarChart = () => {
         bar: +d.bar, // Convert bar to a number
       }));
       setData(parsedData);
+      console.log('Raw CSV Data:', csvData); // Debugging: Check the parsed data
+      console.log('Parsed CSV Data:', parsedData); // Debugging: Check the parsed data
     }).catch(error => {
       console.error('Error loading CSV data:', error); // Debugging: Log any errors
     });
