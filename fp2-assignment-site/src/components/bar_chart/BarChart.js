@@ -32,6 +32,7 @@ const BarChart = () => {
     const svg = d3.select(chartRef.current);
     const width = 800;
     const height = 500;
+    // const margin = { top: 60, right: 30, bottom: 70, left: 80 };
     const margin = { top: 60, right: 30, bottom: 70, left: 80 };
 
     svg.attr('width', width).attr('height', height);
