@@ -30,7 +30,7 @@ const BarChart = () => {
   useEffect(() => {
     if (data.length === 0) return; // Wait until data is loaded
     const svg = d3.select(chartRef.current);
-    const width = 900;
+    const width = 800;
     const height = 500;
     const margin = { top: 60, right: 30, bottom: 70, left: 80 };
 
@@ -268,7 +268,7 @@ const BarChart = () => {
     const handleScroll = (e) => {
       if (isActive && !allowScroll) {
         e.preventDefault();
-        const delta = e.deltaY > 0 ? 0.003 : -0.003; // Adjust scroll sensitivity
+        const delta = e.deltaY > 0 ? 0.005 : -0.005; // Adjust scroll sensitivity
         setAnimationProgress(prev => {
           const newProgress = Math.min(Math.max(prev + delta, 0), 1);
           if (newProgress === 1) setAllowScroll(true); // Allow scrolling past the chart once animation is complete
