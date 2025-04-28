@@ -7,6 +7,7 @@ import ScrollLine from './components/line_connector/ScrollLineConnector';
 import White2010Map from './components/demographics_plot/White2010map';
 import WhiteSideBySide from './components/demographics_plot/WhiteSideBySide';
 import RaceSideBySide from "./components/demographics_plot/RaceSideBySide";
+import RaceElevatedMap from './components/demographics_plot/RaceElevatedMap';
 
 function App() {
   return (
@@ -18,7 +19,7 @@ function App() {
       <Header />
       <ScrollLine />
       <Flow />
-      <RaceSideBySide/>
+      <RaceElevatedMap/>
       <DevProc />
       </div>
       

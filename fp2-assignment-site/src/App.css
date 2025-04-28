@@ -11,8 +11,8 @@
 
 /* each individual map */
 .map-box {
-  flex: 0 0 800px;  /* fixed 800-px panes; change to 1 1 0 if you want shrink-able */
-  height: 600px;
+  flex: 0 0 1000px;  /* fixed 800-px panes; change to 1 1 0 if you want shrink-able */
+  height: 800px;
   position: relative;
 }
 
@@ -97,6 +97,9 @@
 }
 .right-pane {                     /* right card over 2nd map      */
   left:  calc(50% + 800px + 6px - 240px); /* centre + map + gap – card-w */
+}
+.single-pane {                     /* right card over 2nd map      */
+  left:  calc(50% + 460px + 6px - 240px); /* centre + map + gap – card-w */
 }
 
 .map-row { position: relative; }   /* anchor card */
