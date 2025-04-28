@@ -44,9 +44,10 @@ function App() {
       <PricingSection />
 
       <Flow />
-
       
       <EvictionSection />
+
+      <Burden />
           
       <MinoritySection />
      

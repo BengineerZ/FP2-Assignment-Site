@@ -21,7 +21,7 @@ function HousingDashboard() {
   //--------------------------------------------------------------------
   // Layout
   //--------------------------------------------------------------------
-  const MAP_W = 880;
+  const MAP_W = 600;
   const MAP_H = 560;
   const SCATTER = 480;
 
@@ -110,6 +110,27 @@ function HousingDashboard() {
     const proj = d3.geoMercator().fitSize([MAP_W, MAP_H], geo);
     const path = d3.geoPath().projection(proj);
 
+    // Add text label for municipality name on hover - bigger and lower position
+    const muniLabel = svg.append('text')
+      .attr('x', 40)         // Moved right from 10 to 20
+      .attr('y', 60)         // Moved down from 25 to 40
+      .attr('font-size', '28px') // Increased from 18px to 22px
+      .attr('font-weight', 'bold')
+      .attr('fill', '#336')
+      .text('');
+
+    // Add a semi-transparent background for better readability
+    svg.append('rect')
+      .attr('x', 15)         // Moved right from 5 to 15
+      .attr('y', 20)         // Moved down from 25 to 20
+      .attr('width', 300)     // Width that can accommodate most municipality names
+      .attr('height', 25)        // Height for the text
+      .attr('fill', 'rgba(255, 255, 255, 0.7)') // Semi-transparent white
+      .attr('rx', 4)         // Rounded corners
+      .attr('ry', 4)
+      .style('visibility', 'hidden') // Start hidden, will show when text appears
+      .attr('class', 'muni-label-bg');
+
     // Polygons
     svg.append('g')
       .selectAll('path')
@@ -167,28 +188,97 @@ function HousingDashboard() {
         });
       });
 
-    // // Eviction circles
-    // svg.append('g')
-    //   .selectAll('circle')
-    //   .data(muniRecords.filter(r => r.evictions > 0))
-    //   .join('circle')
-    //   .attr('cx', d => {
-    //     const f = geo.features.find(g => g.properties.municipal === d.muni);
-    //     return f ? path.centroid(f)[0] : -999;
-    //   })
-    //   .attr('cy', d => {
-    //     const f = geo.features.find(g => g.properties.municipal === d.muni);
-    //     return f ? path.centroid(f)[1] : -999;
-    //   })
-    //   .attr('r', d => mapR(d.evictions))
-    //   .attr('fill', 'rgba(200,30,30,0.55)')
-    //   .attr('pointer-events', 'none');
+    // Create a legend
+    const legendGroup = svg.append('g')
+      .attr('class', 'legend')
+      .attr('transform', `translate(${MAP_W - 160}, ${MAP_H - 300})`);
+    
+    // Get the data range for the current metric
+    const values = muniRecords
+      .map(d => (
+        metric === 'cost'     ? d.costChange :
+        metric === 'investor' ? d.investorChange :
+        d.evictions
+      ))
+      .filter(v => v !== null && Number.isFinite(v));
+    
+    const [min, max] = d3.extent(values);
+    
+    // Create gradient for legend
+    const legendWidth = 120;
+    const legendHeight = 15;
+    
+    // Add title based on current metric
+    legendGroup.append('text')
+      .attr('x', 0)
+      .attr('y', -10)
+      .attr('font-size', '14px')
+      .attr('font-weight', 'bold')
+      .text(() => {
+        if (metric === 'cost') return 'Rent Burden Change';
+        if (metric === 'investor') return 'Investor Share Change';
+        return 'No-Cause Evictions';
+      });
+    
+    // Draw the gradient rectangle
+    const legendScale = d3.scaleLinear()
+      .domain([0, 1])
+      .range([0, legendWidth]);
+    
+    const numStops = 10;
+    for (let i = 0; i < numStops; i++) {
+      const t = i / (numStops - 1);
+      legendGroup.append('rect')
+        .attr('x', legendScale(i / (numStops - 1)))
+        .attr('y', 0)
+        .attr('width', legendWidth / numStops)
+        .attr('height', legendHeight)
+        .attr('fill', d3.interpolateBlues(t));
+    }
+    
+    // Add min and max labels
+    legendGroup.append('text')
+      .attr('x', 0)
+      .attr('y', legendHeight + 15)
+      .attr('text-anchor', 'start')
+      .attr('font-size', '10px')
+      .text(min.toFixed(1) + (metric !== 'evict' ? '%' : ''));
+    
+    legendGroup.append('text')
+      .attr('x', legendWidth)
+      .attr('y', legendHeight + 15)
+      .attr('text-anchor', 'end')
+      .attr('font-size', '10px')
+      .text(max.toFixed(1) + (metric !== 'evict' ? '%' : ''));
+      
+    // Add a border
+    legendGroup.append('rect')
+      .attr('x', 0)
+      .attr('y', 0)
+      .attr('width', legendWidth)
+      .attr('height', legendHeight)
+      .attr('fill', 'none')
+      .attr('stroke', '#333')
+      .attr('stroke-width', '0.5px');
+      
+    // Add background for better readability
+    legendGroup.insert('rect', ':first-child')
+      .attr('x', -10)
+      .attr('y', -25)
+      .attr('width', legendWidth + 20)
+      .attr('height', legendHeight + 50)
+      .attr('fill', 'rgba(255, 255, 255, 0.8)')
+      .attr('rx', 5)
+      .attr('ry', 5);
   }, [geo, muniRecords, metric, choropleth, mapR]);
 
   // ----- lightweight hover updates (avoid full map redraw) -------------
   useEffect(() => {
     if (!geo || !muniRecords) return;
+    
     const svg = d3.select(mapRef.current);
+    
+    // Update polygon stroke widths
     svg.selectAll('path').attr('stroke-width', d => {
       const r = muniRecords.find(m => m.muni === d.properties.municipal);
       const v =
@@ -199,6 +289,27 @@ function HousingDashboard() {
       const zips = muni2zips.current[d.properties.municipal] || [];
       return zips.some(z => hoverZips.has(z)) ? 2 : 0.4;
     });
+    
+    // Update municipality label
+    if (hoverZips.size > 0) {
+      // Find which municipality is being hovered
+      const hoveredMunis = new Set();
+      muniRecords.forEach(r => {
+        if (r.zips.some(z => hoverZips.has(z))) {
+          hoveredMunis.add(r.muni);
+        }
+      });
+      
+      // Display the municipality name (or names if multiple)
+      if (hoveredMunis.size > 0) {
+        const labelText = Array.from(hoveredMunis).join(', ');
+        svg.select('text').text(labelText);
+      } else {
+        svg.select('text').text('');
+      }
+    } else {
+      svg.select('text').text('');
+    }
   }, [hoverZips, geo, muniRecords, metric]);
 
   //--------------------------------------------------------------------
@@ -210,7 +321,8 @@ function HousingDashboard() {
     const svg = d3.select(scatterRef.current);
     svg.selectAll('*').remove();
 
-    const m = { t: 40, r: 30, b: 70, l: 70 };
+    // Increase bottom margin even further to prevent text cutoff
+    const m = { t: 40, r: 30, b: 150, l: 70 };
     const w = SCATTER - m.l - m.r;
     const h = SCATTER - m.t - m.b;
 
@@ -245,7 +357,7 @@ function HousingDashboard() {
       .attr('x', w / 2)
       .attr('y', h + 50)
       .attr('text-anchor', 'middle')
-      .attr('font-size', 16)
+      .attr('font-size', 14)
       .text('% relative change investor share (2012–2022)');
 
     g.append('text')
@@ -253,16 +365,16 @@ function HousingDashboard() {
       .attr('y', -55)
       .attr('transform', 'rotate(-90)')
       .attr('text-anchor', 'middle')
-      .attr('font-size', 16)
+      .attr('font-size', 14)
       .text('No‑cause evictions per 100 000 households (2020–2024)');
 
     g.append('text')
       .attr('x', w / 2)
       .attr('y', -25)
       .attr('text-anchor', 'middle')
-      .attr('font-size', 20)
+      .attr('font-size', 18)
       .attr('font-weight', 'bold')
-      .text('Investor‑share change vs. 2022 No‑cause evictions');
+      .text('Investor Change vs. No‑Cause Evictions & Rent Burden');
 
     // ------------------------------------------------------------------
     // Linear trendline (least‑squares fit across all finite points)
@@ -301,14 +413,23 @@ function HousingDashboard() {
           .attr('pointer-events', 'none');
       }
     }
-    // Points
+
+    // Create color scale for rent burden
+    const costExtent = d3.extent(muniRecords, d => d.costChange).map(v => 
+      Number.isFinite(v) ? v : 0
+    );
+    const costColorScale = d3.scaleSequential()
+      .domain(costExtent)
+      .interpolator(d3.interpolateRdBu);
+
+    // Points - modified to use rent burden for color and have consistent hover behavior
     g.selectAll('circle')
       .data(muniRecords)
       .join('circle')
       .attr('cx', d => x(d.investorChange))
       .attr('cy', d => y(d.evictions))
       .attr('r', d => scatterR(d.evictions))
-      .attr('fill', d => d3.interpolateReds(d.evictions / d3.max(muniRecords, r => r.evictions || 1)))
+      .attr('fill', d => Number.isFinite(d.costChange) ? costColorScale(d.costChange) : '#888')
       .attr('stroke', d => d.zips.some(z => hoverZips.has(z)) ? '#000' : '#444')
       .attr('stroke-width', d => d.zips.some(z => hoverZips.has(z)) ? 2 : 0.4)
       .attr('opacity', 0.8)
@@ -324,23 +445,134 @@ function HousingDashboard() {
         });
       });
 
-    // Brush for linking
-    const brush = d3.brush()
-      .extent([[0, 0], [w, h]])
-      .on('brush end', (ev) => {
-        if (!ev.selection) { setHoverZips(new Set()); return; }
-        const [[x0, y0], [x1, y1]] = ev.selection;
-        setHoverZips(new Set(
-          muniRecords
-            .filter(d => {
-              const px = x(d.investorChange);
-              const py = y(d.evictions);
-              return px >= x0 && px <= x1 && py >= y0 && py <= y1;
-            })
-            .flatMap(d => d.zips)
-        ));
-      });
-    g.append('g').call(brush);
+    // Add color legend for rent burden below the scatter plot
+    const legendHeight = 15;
+    const legendWidth = w * 0.4;
+    const legendX = (w - legendWidth) / 2 - 70;
+    const legendY = h - 250; // Increased from 65 to 80 to move it down
+    
+    // Create gradient definition
+    const defs = svg.append('defs');
+    const gradient = defs.append('linearGradient')
+      .attr('id', 'cost-burden-gradient')
+      .attr('x1', '0%')
+      .attr('y1', '0%')
+      .attr('x2', '100%')
+      .attr('y2', '0%');
+    
+    // Add gradient stops
+    const numStops = 10;
+    for (let i = 0; i < numStops; i++) {
+      const offset = `${i / (numStops - 1) * 100}%`;
+      const value = costExtent[0] + (i / (numStops - 1)) * (costExtent[1] - costExtent[0]);
+      gradient.append('stop')
+        .attr('offset', offset)
+        .attr('stop-color', costColorScale(value));
+    }
+    
+    // Draw legend rectangle with gradient
+    g.append('rect')
+      .attr('x', legendX)
+      .attr('y', legendY)
+      .attr('width', legendWidth)
+      .attr('height', legendHeight)
+      .style('fill', 'url(#cost-burden-gradient)')
+      .attr('stroke', '#333')
+      .attr('stroke-width', 0.5);
+    
+    // Add legend title
+    g.append('text')
+      .attr('x', legendX + legendWidth / 2)
+      .attr('y', legendY - 25)
+      .attr('text-anchor', 'middle')
+      .attr('font-size', 14)
+      .attr('font-weight', 'bold')
+      .text('% Change in Rent Burden')
+      .append('tspan')
+      .attr('x', legendX + legendWidth / 2)
+      .attr('dy', '1.2em')
+      .text('(2012-2022)');
+    
+    // Add min and max labels
+    g.append('text')
+      .attr('x', legendX)
+      .attr('y', legendY + legendHeight + 15)
+      .attr('text-anchor', 'start')
+      .attr('font-size', '12px')
+      .text(`${costExtent[0].toFixed(1)}%`);
+    
+    g.append('text')
+      .attr('x', legendX + legendWidth)
+      .attr('y', legendY + legendHeight + 15)
+      .attr('text-anchor', 'end')
+      .attr('font-size', '12px')
+      .text(`${costExtent[1].toFixed(1)}%`);
+    
+    // Add a stylized text box with key message below the scatter plot
+    const messageBoxWidth = w * 0.75; // Reduced from 0.9 to keep box from being too wide
+    const messageBoxX = (w - messageBoxWidth) / 2 - 20;
+    const messageBoxY = h + 80;
+    
+    // Create message text group first to calculate its dimensions later
+    const messageGroup = g.append('g')
+      .attr('class', 'message-group')
+      .attr('transform', `translate(${messageBoxX + messageBoxWidth/2}, ${messageBoxY + 25})`); // Added more space
+    
+    // Add the message text with line breaks for better layout, increased font size
+    const messageText = messageGroup.append('text')
+      .attr('text-anchor', 'middle')
+      .attr('font-size', '18px') // Increased from 14px to 18px
+      .attr('font-style', 'italic')
+      .attr('fill', '#333')
+      .text("Increases in investor share of sales in Boston's");
+      
+    // Break the first line into two lines for better fit with larger font
+    messageText.append('tspan')
+      .attr('x', 0)
+      .attr('dy', '1.2em')
+      .text("residential market track with increases");
+      
+    messageText.append('tspan')
+      .attr('x', 0)
+      .attr('dy', '1.2em')
+      .text("in renter cost burden (rent >30% of income) and");
+    
+    messageText.append('tspan')
+      .attr('x', 0)
+      .attr('dy', '1.2em') // Added more vertical space before the bold line
+      .text("no-cause eviction rates. People are being displaced.");
+    
+    // Get the bounding box of the text to size the background rectangle
+    const textBBox = messageGroup.node().getBBox();
+    const padding = 20; // Increased padding from 15 to 20
+    
+    // Create styled text box with drop shadow, positioned behind the text
+    messageGroup.insert('rect', 'text')
+      .attr('x', -textBBox.width/2 - padding)
+      .attr('y', -textBBox.height/2 + padding/2) // Added more space at top
+      .attr('width', textBBox.width + padding*2)
+      .attr('height', textBBox.height + padding*2) // Doubled the padding for height
+      .attr('rx', 10) // Increased from 8 to 10
+      .attr('ry', 10) // Increased from 8 to 10
+      .attr('fill', 'rgba(250, 250, 255, 0.95)')
+      .attr('stroke', '#336')
+      .attr('stroke-width', 1.5) // Increased from 1 to 1.5
+      .style('filter', 'drop-shadow(3px 3px 4px rgba(0,0,0,0.25))'); // Enhanced shadow
+    
+    // Update the overall SVG height to ensure all content is visible
+    const totalHeight = messageBoxY + textBBox.height + padding*2 + 50; // Increased margin from 20 to 50
+    const minHeight = SCATTER; // Ensure we don't make the SVG smaller than its original size
+    svg.attr('height', Math.max(totalHeight, minHeight));
+    
+    // Add a debugging rectangle to see the actual bottom boundary of our view
+    // Comment this out in production
+    // svg.append('rect')
+    //   .attr('x', 0)
+    //   .attr('y', totalHeight - 5)
+    //   .attr('width', SCATTER)
+    //   .attr('height', 5)
+    //   .attr('fill', 'red');
+
   }, [muniRecords, hoverZips, scatterR]);
 
   //--------------------------------------------------------------------
@@ -398,7 +630,7 @@ function HousingDashboard() {
         boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
       }}>
         <span style={{ marginRight: '8px', fontSize: '18px' }}>💡</span>
-        <span><strong>Tip:</strong> Hover over the map or data points to see relationships. Click to select municipalities.</span>
+        <span><strong>Tip:</strong> Hover over the map or data points to see relationships.</span>
       </div>
 
       <div style={{ display: 'flex', gap: '18px' }}>
