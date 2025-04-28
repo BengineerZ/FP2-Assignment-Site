@@ -23,7 +23,7 @@ const MinoritySection = () => {
     at the same time Roxbury has a 22% corporate-ownership rate — the third-highest in Boston.<Citation>Homes for Profit: Speculation and Investment in Greater Boston – MAPC. MAPC. https://www.mapc.org/resource-library/homes-for-profit/#:~:text=MAPC%20has%20released%20research%20that,to%20View%20the%20Executive%20Summary.</Citation> MAPC’s analysis helps explain this overlap: 
     from 2004-2018 one in five Greater-Boston homes, and nearly one in three in communities of color, went to investors, who concentrate 
     in “low-income urban neighborhoods of color” where they can buy cheap, flip quickly, and harvest outsized profits. As our map demonstrates, 
-    those transactions are not just abstract profits; they translate into fewer Black families living in the very heart of Boston’s historically Black community.
+    those <strong>transactions are not just abstract profits</strong>; they translate into fewer Black families living in the very heart of Boston’s historically Black community.
     </p>
 
     <p> 
@@ -34,7 +34,7 @@ const MinoritySection = () => {
     The demographic decline captured in our maps is the human footprint of those market dynamics.
     </p>
 
-    <p>Investor dominance does more than raise purchase prices; it accelerates displacement. National research from Princeton’s Eviction 
+    <p><strong>Investor dominance does more than raise purchase prices; it accelerates displacement</strong>. National research from Princeton’s Eviction 
     Lab finds that large landlords file eviction cases far more often than small owners, even after controlling for tenant characteristics, 
     and that Black renters face the highest risk<Citation>Who is Evicted in America. Eviction Lab. https://evictionlab.org/who-is-evicted-in-america/</Citation>. Layer that behavior onto neighborhoods like Roxbury or Chinatown, where 
     speculative ownership is dense and only rising, and the result is a pipeline that moves homes from community hands into corporate 
