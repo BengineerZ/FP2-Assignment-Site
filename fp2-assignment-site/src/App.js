@@ -46,8 +46,6 @@ function App() {
       <Flow />
       
       <EvictionSection />
-
-      <Burden />
           
       <MinoritySection />
      

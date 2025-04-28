@@ -1,0 +1,16 @@
+.pic {
+    width: 150px;
+    height: auto;
+  }
+
+.narrative-block {
+    margin-top: 100px;
+    margin-bottom: 100px;
+}
+
+.Plot-section p {
+  margin-bottom: -120px; /* Reduce spacing below paragraphs */
+}
+.Plot-section #bar {
+  margin-bottom: -180px; /* Reduce spacing above the BarChart */
+}
