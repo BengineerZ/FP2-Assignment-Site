@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import './Navigation.css'; // We'll add this CSS file next.
 
-const sections = ['home', 'viz', 'dev']; // section IDs
+const sections = ['home', 'viz', 'bar']; // section IDs
 
 export default function NavigationDots() {
   const [active, setActive] = useState('');
 
   useEffect(() => {
     const handleScroll = () => {
-      const scrollPosition = window.scrollY + window.innerHeight / 2 -100;
+      const scrollPosition = window.scrollY + window.innerHeight / 2 - 100;
 
       for (let section of sections) {
         const element = document.getElementById(section);

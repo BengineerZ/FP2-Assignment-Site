@@ -4,6 +4,7 @@ import Header from "./components/Header_Component/Header";
 import Flow from "./components/flow_plot/Flow";
 import DevProc from './components/dev_process/DevProc';
 import ScrollLine from './components/line_connector/ScrollLineConnector';
+import BarChart from './components/bar_chart/BarChart';
 
 function App() {
   return (
@@ -15,7 +16,7 @@ function App() {
       <Header />
       <ScrollLine />
       <Flow />
-      <DevProc />
+      <BarChart />
       </div>
       
     </div>

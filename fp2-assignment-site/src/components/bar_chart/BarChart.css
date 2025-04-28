@@ -1,0 +1,27 @@
+#bar {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.bar {
+  transition: opacity 0.5s ease;
+}
+
+.line1 {
+  stroke: #ff5733;
+  stroke-width: 2;
+}
+
+.line2 {
+  stroke: #3375ff;
+  stroke-width: 2;
+}
+
+.annotation {
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-weight: bold;
+}
