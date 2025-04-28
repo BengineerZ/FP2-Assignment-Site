@@ -303,7 +303,7 @@ const BarChart = () => {
   }, [data]);
 
   return (
-    <div ref={containerRef} className='bar section' id="bar" style={{ position: 'relative', overflow: 'visible' }}>
+    <div ref={containerRef} className='bar section' id="bar" style={{ position: 'relative', overflow: 'visible' ,maxHeight: '500px' }}>
       <svg ref={chartRef} style={{ overflow: 'visible' }}></svg>
     </div>
   );

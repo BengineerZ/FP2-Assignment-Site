@@ -20,8 +20,9 @@ const PricingSection = () => {
         Click the lightbulb for help!
       </HelpIndicator>
       
+      <div style={{ marginTop: "-120px", marginBottom: "-180px" }}>
       <BarChart />
-      
+      </div>
       
       <div className='text-block'>
       <p>
