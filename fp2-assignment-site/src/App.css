@@ -70,6 +70,7 @@ p {
   font-size: 1.2rem;
   margin: 20px;
   line-height: 1.5;
+  text-align: justify;
 }
 
 .wrapper {
@@ -79,4 +80,8 @@ p {
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+
+strong {
+  color: #2273f3;
 }

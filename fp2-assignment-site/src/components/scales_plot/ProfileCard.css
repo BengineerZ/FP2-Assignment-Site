@@ -1,0 +1,50 @@
+.profile-card {
+    position: relative;             /* so the “×” can be absolute */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    background: white;
+    border: 1px solid #d0d3e0;
+    border-radius: 6px;
+    height: 100%;
+    box-sizing: border-box;
+    width: 400px;
+  }
+
+  .profile-card .scale-svg {
+    width: 180px;        /* ← small */
+    height: 180px;
+    margin: 0;           /* top-aligned with the heading/text */
+  }
+
+  .profile-card.overview {
+    justify-content: center;      /* vertical centering */
+    gap: 0;                       /* remove extra space above/below the scale */
+  }
+  
+  .profile-card.overview .scale-svg {
+    width: 100%;
+    max-width: 280px;   /* pick whatever looks good */
+    height: auto;       /* keeps aspect ratio */
+    margin: 0 auto;
+  }
+  .profile-card.overview .scale-svg   { width: 240px; height: 240px; }
+  
+  .profile-card__title { margin: 0; font-size: 1.25rem; font-weight: 600; color: #44506a; }
+  .profile-card__text  { margin: 0; line-height: 1.45;  color: #555e78; text-align: center; }
+  
+  .profile-card__close {
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    background: none;
+    border: none;
+    font-size: 1.8rem;
+    line-height: 1;
+    cursor: pointer;
+    color: #666;
+  }
+  .profile-card__close:hover { color: #000; }
+  
