@@ -31,7 +31,7 @@ export default function ProfileCard({ region, ratio, currentRate, onClose }) {
         <p className="profile-card__text">
           Overall corporate-ownership rate:&nbsp;
          <strong>{(currentRate * 100).toFixed(1)} %</strong>
-         <p className="profile-card__text">Relative ownership rate shown between owner occupied properties and corporate-owned, compared to 2000 levels.</p>
+         <p className="profile-card__text">Relative ownership rate shown between owner occupied properties and corporate-owned, compared to 2004 levels.</p>
         </p>
         
       )}

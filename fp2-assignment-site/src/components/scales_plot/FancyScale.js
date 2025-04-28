@@ -21,8 +21,8 @@ export default function FancyScale({ ratio = 1, duration = 600 }) {
 
   useEffect(() => {
     /* ---------- map ratio → limited angle (±25°) ---------- */
-    const from = clamp((last.current - 1) * 25, -25, 25);
-    const to   = clamp((ratio        - 1) * 25, -25, 25);
+    const from = clamp((last.current - 1) * 25, -40, 40);
+    const to   = clamp((ratio        - 1) * 25, -40, 40);
     last.current = ratio;
 
     const lerp = interpolate(from, to);
@@ -31,7 +31,7 @@ export default function FancyScale({ ratio = 1, duration = 600 }) {
 
     function frame(t) {
       const p   = Math.min(1, (t - t0) / duration);
-      const ang = clamp((lerp(ease(p)))*2.5+12, -40, 40);
+      const ang = clamp((lerp(ease(p)))*0.5+12, -40, 40);
 
       /* Beam pivots around the centre of the round boss (256, 71) */
       beam.current.setAttribute('transform', `rotate(${ang} 256 45)`);

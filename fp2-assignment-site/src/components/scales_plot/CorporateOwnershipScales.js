@@ -98,21 +98,36 @@ const CorporateOwnershipScales = ({ csvUrl, geoJsonUrl, width = 900, height = 60
 
   /* --- Load CSV & GeoJSON --- */
   useEffect(() => {
-    d3.csv(csvUrl, (d) => ({
-      region: (d.city || "").toUpperCase(),
-      year: +d.year,
-      total_sales: +d.total_sales,
-      corporate_sales: +d.corporate_sales,
-      owner_sales: +d.owner_occ_sales,
-    })).then((rows) => {
+    // Updated d3.csv parsing to match new headers: Neighborhood, Year, own, corp
+    d3.csv(csvUrl, (d) => {
+      const corpSales = +d.corp || 0; // Ensure numeric, default to 0 if missing/invalid
+      const ownerSales = +d.own || 0; // Ensure numeric, default to 0 if missing/invalid
+      return {
+        region: (d.Neighborhood || "").toUpperCase(), // Use Neighborhood for region
+        year: +d.Year, // Use Year
+        corporate_sales: corpSales, // Use corp
+        owner_sales: ownerSales, // Use own
+        total_sales: corpSales + ownerSales, // Calculate total_sales
+      };
+    }).then((rows) => {
       setData(rows);
+      // Ensure years are extracted correctly after parsing
       const sortedYears = Array.from(new Set(rows.map((r) => r.year))).sort((a, b) => a - b);
-      setYear(sortedYears[0]);
+      // Set initial year only if sortedYears is not empty
+      if (sortedYears.length > 0) {
+        setYear(sortedYears[0]);
+      } else {
+        setYear(null); // Handle case where no valid years are found
+      }
+    }).catch(error => {
+        console.error("Error loading or parsing CSV:", error);
+        // Handle error state appropriately, e.g., show an error message
     });
 
     fetch(geoJsonUrl)
       .then((r) => r.json())
-      .then(setRegionsGeo);
+      .then(setRegionsGeo)
+      .catch(error => console.error("Error loading GeoJSON:", error));
   }, [csvUrl, geoJsonUrl]);
 
   /* --- Filter GeoJSON to only regions present in data --- */
@@ -123,23 +138,34 @@ const CorporateOwnershipScales = ({ csvUrl, geoJsonUrl, width = 900, height = 60
       const feats = regionsGeo.features.filter((f) => dataRegions.has(getRegionName(f.properties)));
       return { ...regionsGeo, features: feats };
     }
-    return dataRegions.has(getRegionName(regionsGeo.properties)) ? regionsGeo : null;
-  }, [regionsGeo, data]); // Removed dependency on 'data' -> Added back 'data' as filter depends on it
+    // Handle case where regionsGeo might be a single Feature
+    if (regionsGeo.type === "Feature") {
+        return dataRegions.has(getRegionName(regionsGeo.properties)) ? regionsGeo : null;
+    }
+    return null; // Return null if not FeatureCollection or Feature
+  }, [regionsGeo, data]);
 
   /* --- Baseline corporate‑ownership rate (first year) --- */
   const baselineRate = useMemo(() => {
     if (!data.length) return new Map();
+    // Find the minimum year from the parsed data
     const initYear = d3.min(data, (d) => d.year);
+    // Handle case where initYear might be undefined (if data is empty or has no valid years)
+    if (initYear === undefined) return new Map();
+
     const rates = new Map();
     const byRegion = d3.group(
       data.filter((d) => d.year === initYear),
       (d) => d.region
     );
     byRegion.forEach((arr, region) => {
+      // Use the updated property names
       const corp = d3.sum(arr, (d) => d.corporate_sales);
       const total = d3.sum(arr, (d) => d.total_sales);
       rates.set(region, total ? corp / total : 0); // Avoid division by zero
     });
+
+    // Calculate baseline for "ALL" regions
     const initYearData = data.filter((d) => d.year === initYear); // Filter once
     const corpAll = d3.sum(initYearData, (d) => d.corporate_sales);
     const totalAll = d3.sum(initYearData, (d) => d.total_sales);
@@ -148,13 +174,15 @@ const CorporateOwnershipScales = ({ csvUrl, geoJsonUrl, width = 900, height = 60
   }, [data]);
 
   const currentRate = useMemo(() => {
-    if (!year) return 0;
+    // Ensure year is not null/undefined before filtering
+    if (!year || !data.length) return 0;
     const rows = data.filter(
       (d) => d.year === year && (!selectedRegion || d.region === selectedRegion)
     );
+    // Use the updated property names
     const corp = d3.sum(rows, (d) => d.corporate_sales);
     const total = d3.sum(rows, (d) => d.total_sales);
-    return total ? corp / total : 0;
+    return total ? corp / total : 0; // Avoid division by zero
   }, [data, year, selectedRegion]);
 
   const ratio = useMemo(() => {
@@ -163,8 +191,10 @@ const CorporateOwnershipScales = ({ csvUrl, geoJsonUrl, width = 900, height = 60
     // Ensure baseline exists for the key, provide a very small number to avoid division by zero if rate is 0
     const base = baselineRate.get(key) || 0.00001;
     // Ensure current rate isn't NaN or undefined before division
-    const current = currentRate || 0;
-    return current / base ;
+    // currentRate calculation already handles division by zero, returning 0
+    const current = currentRate ;
+    // Avoid division by zero for the base rate
+    return base === 0 ? (current === 0 ? 1 : Infinity) : current / base ; // Handle base=0 case explicitly
   }, [baselineRate, currentRate, selectedRegion, year]);
 
   const years = useMemo(
@@ -345,7 +375,7 @@ const CorporateOwnershipScales = ({ csvUrl, geoJsonUrl, width = 900, height = 60
             <ProfileCard
             region={selectedRegion}
             ratio={ratio}
-            currentRate={(currentRate-0.6)-0.06}
+            currentRate={currentRate}
             onClose={() => {
                 setSelectedRegion(null);
                 zoomToFull();
