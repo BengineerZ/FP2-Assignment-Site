@@ -167,22 +167,22 @@ function HousingDashboard() {
         });
       });
 
-    // Eviction circles
-    svg.append('g')
-      .selectAll('circle')
-      .data(muniRecords.filter(r => r.evictions > 0))
-      .join('circle')
-      .attr('cx', d => {
-        const f = geo.features.find(g => g.properties.municipal === d.muni);
-        return f ? path.centroid(f)[0] : -999;
-      })
-      .attr('cy', d => {
-        const f = geo.features.find(g => g.properties.municipal === d.muni);
-        return f ? path.centroid(f)[1] : -999;
-      })
-      .attr('r', d => mapR(d.evictions))
-      .attr('fill', 'rgba(200,30,30,0.55)')
-      .attr('pointer-events', 'none');
+    // // Eviction circles
+    // svg.append('g')
+    //   .selectAll('circle')
+    //   .data(muniRecords.filter(r => r.evictions > 0))
+    //   .join('circle')
+    //   .attr('cx', d => {
+    //     const f = geo.features.find(g => g.properties.municipal === d.muni);
+    //     return f ? path.centroid(f)[0] : -999;
+    //   })
+    //   .attr('cy', d => {
+    //     const f = geo.features.find(g => g.properties.municipal === d.muni);
+    //     return f ? path.centroid(f)[1] : -999;
+    //   })
+    //   .attr('r', d => mapR(d.evictions))
+    //   .attr('fill', 'rgba(200,30,30,0.55)')
+    //   .attr('pointer-events', 'none');
   }, [geo, muniRecords, metric, choropleth, mapR]);
 
   // ----- lightweight hover updates (avoid full map redraw) -------------
