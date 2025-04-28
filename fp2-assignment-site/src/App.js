@@ -6,6 +6,7 @@ import ScrollLine from './components/line_connector/ScrollLineConnector';
 import CorpOwned from './components/scales_plot/CorpOwned';
 import IntroductionBlock from './components/narrative_block/IntroductionBlock';
 import HousingCostsBlock from './components/narrative_block/HousingCostsBlock';
+import PricingSection from './components/pricing_section/PricingSection';
 import EvictionSection from './components/eviction_section/EvictionSection';
 import MinoritySection from './components/ethnicity/MinoritySection';
 import CitationSystem, {
@@ -39,6 +40,8 @@ function App() {
       <CorpOwned />
 
       <HousingCostsBlock />
+      
+      <PricingSection />
 
       <Flow />
 

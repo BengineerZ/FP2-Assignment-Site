@@ -12,9 +12,6 @@ const BarChart = () => {
 
   useEffect(() => {
     // Load the CSV file
-    //d3.csv("./data.csv", function(data) {
-    //  console.log('CSV Data:', data); // Debugging: Check the loaded data
-    //});
     d3.csv(`${process.env.PUBLIC_URL}/nitishplot/income_data.csv`).then((csvData) => {
       const parsedData = csvData.map(d => ({
         year: +d.year,
@@ -33,7 +30,7 @@ const BarChart = () => {
   useEffect(() => {
     if (data.length === 0) return; // Wait until data is loaded
     const svg = d3.select(chartRef.current);
-    const width = 1000;
+    const width = 900;
     const height = 500;
     const margin = { top: 60, right: 30, bottom: 70, left: 80 };
 
@@ -259,6 +256,7 @@ const BarChart = () => {
           .style('padding', '10px')
           .html('<strong> Exponential trend in price-to-income deficit! </strong>');
       }
+      
 
 
     };

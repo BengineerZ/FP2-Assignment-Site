@@ -2,13 +2,14 @@ import React from 'react';
 import "./EvictionSection.css";
 import { ReactComponent as Bus } from './images/bus-svgrepo-com.svg';
 import { ReactComponent as Pedestrian } from './images/pedestrian-crossing-svgrepo-com.svg';
+import Burden from '../burden_plot/Burden';
 
 const EvictionSection = () => {
   return (
     <div className='narrative-block section' id='evict'>
       <h2>Evicted by Investment: When Renters Pay the Price</h2>
       <h4>When homes become investments, what happens to the people living in them?</h4>
-      
+      <Burden />
 
         <p>
         Investor activity has not only reshaped property ownership patterns, but has also contributed to rising instability in many neighborhoods.
