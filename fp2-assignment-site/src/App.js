@@ -4,6 +4,9 @@ import Header from "./components/Header_Component/Header";
 import Flow from "./components/flow_plot/Flow";
 import DevProc from './components/dev_process/DevProc';
 import ScrollLine from './components/line_connector/ScrollLineConnector';
+import White2010Map from './components/demographics_plot/White2010map';
+import WhiteSideBySide from './components/demographics_plot/WhiteSideBySide';
+import RaceSideBySide from "./components/demographics_plot/RaceSideBySide";
 
 function App() {
   return (
@@ -15,6 +18,7 @@ function App() {
       <Header />
       <ScrollLine />
       <Flow />
+      <RaceSideBySide/>
       <DevProc />
       </div>
       
