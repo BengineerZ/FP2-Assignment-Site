@@ -1,0 +1,68 @@
+.map-box {
+    width: 100%;
+    height: 500px;
+    border: 8px solid #bfbfbf; /* Gray border */
+    border-radius: 10px; /* Rounded corners */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+    overflow: hidden; /* Prevent content overflow */
+  }
+  
+  /* Map row container */
+  .map-row {
+    display: flex;
+    justify-content: center;
+    gap: 20px; /* Space between maps or cards */
+    margin: 20px 0;
+  }
+  
+  /* Race picker dropdown */
+  .race-picker {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .race-picker select {
+    padding: 8px 12px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    cursor: pointer;
+  }
+  
+  /* Info card styling */
+  .info-card {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+    max-width: 300px;
+  }
+  
+  .info-card h3 {
+    margin: 0 0 10px;
+    font-size: 18px;
+  }
+  
+  .info-card p {
+    margin: 5px 0;
+    font-size: 14px;
+  }
+  
+  .info-card .x {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    cursor: pointer;
+    font-size: 16px;
+    color: #888;
+  }
+  
+  .info-card .x:hover {
+    color: #333;
+  }

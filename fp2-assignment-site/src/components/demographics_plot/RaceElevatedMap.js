@@ -272,6 +272,7 @@ import React, { useEffect, useRef, useState } from "react";
 import mapboxgl             from "mapbox-gl";
 import * as d3              from "d3";
 import * as turf            from "@turf/turf";
+import './RaceElevatedMap.css';
 
 mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_TOKEN;
 
@@ -437,30 +438,48 @@ export default function RaceElevatedMap() {
   /* UI --------------------------------------------------------*/
   return (
     <>
-      <div className="race-picker" id='race'>
-        <select value={raceKey} onChange={e=>setRaceKey(e.target.value)}>
-          {Object.entries(RACES).map(([k,{label}]) =>
-            <option key={k} value={k}>{label}</option>)}
+      <div className="race-picker" id="race">
+        <label htmlFor="race-select" style={{ marginRight: "10px" }}>
+          Demographic Selection:
+        </label>
+        <select
+          id="race-select"
+          value={raceKey}
+          onChange={(e) => setRaceKey(e.target.value)}
+        >
+          {Object.entries(RACES).map(([k, { label }]) => (
+            <option key={k} value={k}>
+              {label}
+            </option>
+          ))}
         </select>
       </div>
-
-      <h2 style={{textAlign:"center"}}>
+  
+      <p style={{ textAlign: "center" }}>
         {RACES[raceKey].label} — Change 2010 to 2020
-      </h2>
-
-      <div className="map-row" style={{position:"relative"}}>
+      </p>
+  
+      <div className="map-row" style={{ position: "relative" }}>
         <div className="map-box" ref={mapRef} />
-
+  
         {chosen && (
           <div className="info-card single-pane">
-            <span className="x" onClick={()=>setChosen(null)}>✕</span>
+            <span className="x" onClick={() => setChosen(null)}>
+              ✕
+            </span>
             <h3>{chosen.name}</h3>
-            <p><strong>2010:</strong> {chosen.p10==null?"n/a":chosen.p10+"%"}</p>
-            <p><strong>2020:</strong> {chosen.p20==null?"n/a":chosen.p20+"%"}</p>
-            <p><strong>Δ 10→20:</strong>{
-              chosen.delta==null?"n/a":
-              (chosen.delta>0?"+":"")+chosen.delta+" Δ%"
-            }</p>
+            <p>
+              <strong>2010:</strong> {chosen.p10 == null ? "n/a" : chosen.p10 + "%"}
+            </p>
+            <p>
+              <strong>2020:</strong> {chosen.p20 == null ? "n/a" : chosen.p20 + "%"}
+            </p>
+            <p>
+              <strong>Δ 10→20:</strong>
+              {chosen.delta == null
+                ? "n/a"
+                : (chosen.delta > 0 ? " +" : " ") + chosen.delta + " Δ%"}
+            </p>
           </div>
         )}
       </div>
