@@ -1,29 +1,55 @@
+/* Sidebar container */
 .dot-sidebar {
-    position: fixed;
-    top: 50%;
-    right: 100px;
-    transform: translateY(-50%);
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    z-index: 1000;
-  }
-  
-  .dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background-color: #ccc;
-    transition: all 0.3s ease;
-    border: none;
-    cursor: pointer;
-  }
-  
-  .dot:hover {
-    background-color: #bbb;
-  }
-  
-  .dot.active {
-    background-color: #007BFF;
-    transform: scale(1.25);
-  }
+  position: fixed;
+  top: 50%;
+  right: 80px;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Dots */
+.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: #ccc;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  transition: background-color 0.3s ease;
+}
+
+.dot.active {
+  background-color: #007bff; /* Active dot color */
+}
+
+/* Labels */
+.dot-label {
+  position: absolute;
+  right: 100%; /* Align the label's right edge to the left of the dot */
+  margin-right: 10px; /* Add a fixed distance between the label and the dot */
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: #ffffff;
+  color: #1f1f1f;
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Show label on hover */
+.dot:hover .dot-label {
+  opacity: 1;
+  transform: translateY(-50%) translateX(-10px);
+}
+
+.dot-sidebar.hidden {
+  display: none;
+}

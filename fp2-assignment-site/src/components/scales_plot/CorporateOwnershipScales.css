@@ -157,3 +157,52 @@
       fill-opacity: 1.0;
       cursor: default; /* Indicate it's not clickable */
   }
+
+
+  .info.legend {
+    background: white;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+    line-height: 18px;
+    color: #333;
+    text-align: center;
+    font-size: 0.8em;
+  }
+
+  /* Legend container */
+.info.legend.colorbar {
+  background: rgba(255, 255, 255, 0.9);
+  padding: 10px;
+  border-radius: 5px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+  font-size: 12px;
+  line-height: 18px;
+  color: #333;
+  text-align: center;
+  width: 200px;
+}
+
+/* Color bar container */
+.colorbar-container {
+  display: flex;
+  height: 10px;
+  margin: 5px 0;
+}
+
+/* Individual color segments */
+.colorbar-container span {
+  flex: 1;
+  height: 100%;
+}
+
+/* Labels below the color bar */
+.colorbar-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 5px;
+}
+
+.colorbar-labels span {
+  font-size: 10px;
+}

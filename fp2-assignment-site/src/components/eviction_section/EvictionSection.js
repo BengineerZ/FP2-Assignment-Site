@@ -7,7 +7,7 @@ import HelpIndicator from '../help_comp/HelpIndicator';
 
 const EvictionSection = () => {
   return (
-    <div className='narrative-block section' id='evict'>
+    <div className='narrative-block section' id='evict' style={{ marginTop: "20px", marginBottom: "20px", maxWidth: "800px" }}>
       <h2>Evicted by Investment: When Renters Pay the Price</h2>
       <h4>When homes become investments, what happens to the people living in them?</h4>
 
@@ -75,6 +75,8 @@ const EvictionSection = () => {
         </p>
 
         </div>
+
+        <hr/>
 
 
 

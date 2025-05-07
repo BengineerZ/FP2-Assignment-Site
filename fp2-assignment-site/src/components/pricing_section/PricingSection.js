@@ -5,7 +5,7 @@ import HelpIndicator from '../help_comp/HelpIndicator';
 
 const PricingSection = () => {
   return (
-    <div className='narrative-block section' id='price' style={{ marginTop: "20px", marginBottom: "20px" }} >
+    <div className='narrative-block section' id='price' style={{ marginTop: "20px", marginBottom: "20px" , maxWidth: "800px"}} >
       <h2>Housing Out of Reach</h2>
       <h4>The Affordability Crisis for the Average Bostonian</h4>
       
@@ -36,6 +36,10 @@ const PricingSection = () => {
       <br />
       <br />
       <br />
+
+      <hr/>
+
+      
 
     </div>
   );

@@ -22,6 +22,8 @@ import WhiteSideBySide from './components/demographics_plot/WhiteSideBySide';
 import RaceSideBySide from "./components/demographics_plot/RaceSideBySide";
 import RaceElevatedMap from './components/demographics_plot/RaceElevatedMap';
 
+import Conclusion from './components/conclusion_section/Conclusion';
+
 
 function App() {
   return (
@@ -41,14 +43,19 @@ function App() {
 
       <HousingCostsBlock />
       
-      <PricingSection />
+      <PricingSection/>
 
       <Flow />
       
       <EvictionSection />
           
       <MinoritySection />
-     
+
+      
+
+      <Conclusion />
+    
+      <hr />
 
       {/* <DevProc /> */}
       <CitationsList />

@@ -580,7 +580,7 @@ function FlowChart({ csvUrl = `${process.env.PUBLIC_URL}/mapc_region_residential
   const visibleMinYear = 2000;
 
   return (
-    <div>
+    <div >
       {/* Removed "FlowChart Demo" heading */}
 
       {/* Slider for time with tick marks */}

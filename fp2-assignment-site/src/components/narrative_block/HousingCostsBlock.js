@@ -33,7 +33,7 @@ REPORT CARD - https://www.tbf.org/-/media/tbf/reports-and-covers/2024/gbhrc-2024
           We will analyze the trends in home prices and rents, and how they have been affected by the rise of corporate landlords. 
           We will also look at the implications of these changes for local communities and the future of affordable housing in the region.</p>
         
-
+      <hr/>
     </div>
   );
 };

@@ -7,7 +7,7 @@ import HelpIndicator from '../help_comp/HelpIndicator';
 
 const Flow = () => {
   return (
-    <div className='flow fnarrative-block section' id='viz' style={{ marginTop: "20px", marginBottom: "20px" }}>
+    <div className='flow fnarrative-block section' id='viz' style={{ marginTop: "20px", marginBottom: "20px", maxWidth: "800px" }}>
       <h2>Who is Collecting More Profit in the Boston Housing Market?</h2>
       <h4>Visualizing the allocation of profit between investors and non-investors.</h4>
       <p> 
@@ -17,11 +17,13 @@ const Flow = () => {
       <HelpIndicator helpText="Click and drag the timeline to see how the flow of cash has changed over time!">
         Click the lightbulb for help!
       </HelpIndicator>
-
-      <FlowChart id="chart-container"/>
+      <div class="observe-overlap"><FlowChart id="chart-container"/></div>
+      
       <p>
       In this plot, we observe a larger flow of cash for investors than for non-investors. We also see the flow of cash towards investors increasing over time! This is representative of the Boston housing landscape and how profit-seeking investors are squeezing out more and more profit from the market. This is relevant since large amounts of investor activity are clear causal factors in the rising prices of housing as detailed above.
       </p>
+    <hr/>
+      
     </div>
   );
 };

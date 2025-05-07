@@ -6,6 +6,7 @@ import "leaflet/dist/leaflet.css";
 import "./CorporateOwnershipScales.css";
 import FancyScale from "./FancyScale";
 import ProfileCard from "./ProfileCard";
+import { interpolateBlues, interpolateReds } from "d3-scale-chromatic";
 
 /* -----------------------------------------------------------
    Helpers
@@ -185,17 +186,22 @@ const CorporateOwnershipScales = ({ csvUrl, geoJsonUrl, width = 900, height = 60
     return total ? corp / total : 0; // Avoid division by zero
   }, [data, year, selectedRegion]);
 
+  // const ratio = useMemo(() => {
+  //   if (!baselineRate.size || !year) return 1; // Also check if year is set
+  //   const key = selectedRegion || "ALL";
+  //   // Ensure baseline exists for the key, provide a very small number to avoid division by zero if rate is 0
+  //   const base = baselineRate.get(key) || 0.00001;
+  //   // Ensure current rate isn't NaN or undefined before division
+  //   // currentRate calculation already handles division by zero, returning 0
+  //   const current = currentRate ;
+  //   // Avoid division by zero for the base rate
+  //   return base === 0 ? (current === 0 ? 1 : Infinity) : current / base ; // Handle base=0 case explicitly
+  // }, [baselineRate, currentRate, selectedRegion, year]);
   const ratio = useMemo(() => {
-    if (!baselineRate.size || !year) return 1; // Also check if year is set
-    const key = selectedRegion || "ALL";
-    // Ensure baseline exists for the key, provide a very small number to avoid division by zero if rate is 0
-    const base = baselineRate.get(key) || 0.00001;
-    // Ensure current rate isn't NaN or undefined before division
-    // currentRate calculation already handles division by zero, returning 0
-    const current = currentRate ;
-    // Avoid division by zero for the base rate
-    return base === 0 ? (current === 0 ? 1 : Infinity) : current / base ; // Handle base=0 case explicitly
-  }, [baselineRate, currentRate, selectedRegion, year]);
+    const flatRate = 0.1; // Flat rate of 10%
+    if (!year) return 1; // Ensure year is set
+    return flatRate === 0 ? (currentRate === 0 ? 1 : Infinity) : currentRate / flatRate;
+  }, [currentRate, year]);
 
   const years = useMemo(
     () => Array.from(new Set(data.map((d) => d.year))).sort((a, b) => a - b),
@@ -206,7 +212,11 @@ const CorporateOwnershipScales = ({ csvUrl, geoJsonUrl, width = 900, height = 60
   const zoomToFull = () => {
     // Check if mapRef is populated
     if (mapRef.current) {
-      mapRef.current.flyToBounds(FULL_BOUNDS, { padding: [20, 20] });
+      // Adjust the bounds and padding to ensure the map is not too zoomed in
+      mapRef.current.flyToBounds(FULL_BOUNDS, {
+        padding: [50, 50], // Increase padding for better visibility
+        maxZoom: 11,       // Set a maximum zoom level to prevent over-zooming
+      });
     } else {
       console.warn("zoomToFull called before map instance is ready.");
     }
@@ -266,11 +276,51 @@ const CorporateOwnershipScales = ({ csvUrl, geoJsonUrl, width = 900, height = 60
 
   const regionStyle = (feature) => {
     const name = getRegionName(feature.properties);
+  
+    // Default balanced rate (10%)
+    const balancedRate = 0.1;
+  
+    // Get the corporate ownership rate for the current region
+    const regionRate = (() => {
+      const regionData = data.filter(
+        (d) => d.year === year && d.region === name // Use the current `year`
+      );
+      const corp = d3.sum(regionData, (d) => d.corporate_sales);
+      const total = d3.sum(regionData, (d) => d.total_sales);
+      return total ? corp / total : null; // Avoid division by zero
+    })();
+  
+    // Determine color and opacity based on the rate
+    let fillColor = "#ccc"; // Default color for regions with no data
+    let fillOpacity = 0.2;  // Default opacity
+    let weight = 1;         // Default border weight
+    let color = "#555";     // Default border color
+  
+    if (regionRate !== null) {
+      if (regionRate < balancedRate) {
+        // Below 10%: Blue gradient
+        const intensity = (balancedRate - regionRate) / balancedRate; // Normalize
+        fillColor = d3.interpolateBlues(intensity); // Use D3's color interpolator
+        fillOpacity = 0.2 + 0.5 * intensity; // Scale opacity
+      } else {
+        // Above 10%: Red gradient
+        const intensity = (regionRate - balancedRate) / balancedRate; // Normalize
+        fillColor = d3.interpolateReds(intensity); // Use D3's color interpolator
+        fillOpacity = 0.2 + 0.5 * intensity; // Scale opacity
+      }
+    }
+  
+    // Highlight selected region
+    if (selectedRegion && name === selectedRegion) {
+      weight = 3; // Thicker border for selected region
+      color = "#444"; // Darker border color for selected region
+    }
+  
     return {
-      weight: 1,
-      color: "#555",
-      fillOpacity: selectedRegion ? (name === selectedRegion ? 0.7 : 0.2) : 0.5,
-      fillColor: "#3182bd", // Example color
+      weight,
+      color,
+      fillOpacity,
+      fillColor,
     };
   };
 
@@ -284,7 +334,7 @@ const CorporateOwnershipScales = ({ csvUrl, geoJsonUrl, width = 900, height = 60
 
     // Tooltip
     const props = feature.properties;
-    const tip = props.census_name || props.massgis_name || props.NAME || "Region"; // Fallback tooltip
+    const tip = props.census_name || props.massgis_name || props.NAME || props.name || "Region"; // Fallback tooltip
     layer.bindTooltip(tip);
   };
 
@@ -305,29 +355,81 @@ const CorporateOwnershipScales = ({ csvUrl, geoJsonUrl, width = 900, height = 60
    // Revised onEachRegion for better mouseout
    const onEachRegionRevised = (feature, layer) => {
     layer.on({
-      mouseover: (e) => e.target.setStyle({ weight: 3, color: '#444' }), // Highlight
-      mouseout: (e) => {
-           // Check if the layer is the currently selected one before resetting fully
-           const currentName = getRegionName(feature.properties);
-           if (selectedRegion !== currentName) {
-               e.target.setStyle(regionStyle(feature)); // Reset fully only if not selected
-           } else {
-               // If it IS selected, reset weight/color but keep opacity
-                e.target.setStyle({
-                    weight: 1, // Reset weight
-                    color: "#555", // Reset color
-                    fillOpacity: 0.7, // Keep selected opacity
-                    fillColor: "#3182bd" // Keep fill color
-                });
-           }
+      mouseover: (e) => {
+        const layer = e.target;
+        layer.setStyle({
+          weight: 3, // Thicker border on hover
+          color: '#444', // Darker border color
+        });
       },
-      click: handleRegionClick,
+      mouseout: (e) => {
+        const layer = e.target;
+        layer.setStyle(regionStyle(layer.feature)); // Reset to the updated style
+      },
+      click: handleRegionClick, // Keep the click functionality as is
     });
+  
+    // Tooltip
     const props = feature.properties;
-    const tip = props.census_name || props.massgis_name || props.NAME || "Region";
+    const tip = props.census_name || props.massgis_name || props.NAME || props.name || "Region";
     layer.bindTooltip(tip);
   };
 
+  const addLegend = (map) => {
+    const legend = L.control({ position: "topright" }); // Move to the top-right corner
+  
+    legend.onAdd = function () {
+      const div = L.DomUtil.create("div", "info legend colorbar");
+  
+      // Define the color scale and labels
+      const grades = [0., 0.05, 0.1, 0.2, 0.5]; // Thresholds for corporate ownership rates
+      const labels = ["0%", "5%", "10%", "20%", "50%+"];
+  
+      // Generate the legend content
+      div.innerHTML = "<body>Corporate Ownership Rate</body>";
+      div.innerHTML += `
+        <div class="colorbar-container">
+          ${grades
+            // .slice(0, -1) // Exclude the last grade since it's the upper bound
+            .map((grade, i) => {
+              const nextGrade = grades[i + 1];
+              const color =
+                grade < 0.1
+                  ? d3.interpolateBlues((0.1 - grade) / 0.1) // Blue gradient for lower values
+                  : d3.interpolateReds((grade - 0.1) / 0.1); // Red gradient for higher values
+              const opacity = 
+                grade < 0.1
+                  ? 0.2 + 0.5 * ((0.1 - grade) / 0.1)
+                  : 0.2 + 0.5 * ((grade - 0.1) / 0.1);
+              return `<span style="background:${color}; opacity:${opacity}; flex: 1;"></span>`;
+            })
+            .join("")}
+        </div>
+        <div class="colorbar-labels">
+          ${labels
+            .map((label) => `<span>${label}</span>`)
+            .join("")}
+        </div>
+      `;
+  
+      return div;
+    };
+  
+    legend.addTo(map);
+  };
+  
+  // Add the legend to the map in the `useEffect` hook
+  useEffect(() => {
+    if (mapRef.current) {
+      // Ensure the legend is added only once
+      if (!mapRef.current._legendAdded) {
+        addLegend(mapRef.current);
+        mapRef.current._legendAdded = true; // Custom flag to prevent duplicate legends
+      }
+    }
+  }, [mapRef.current]);
+
+  
 
   if (!filteredGeo || !year) return <div className="corp-loading">Loading…</div>;
 
@@ -355,6 +457,9 @@ const CorporateOwnershipScales = ({ csvUrl, geoJsonUrl, width = 900, height = 60
             className="map"
             scrollWheelZoom={false}
             ref={mapRef} // Use the ref prop here
+            // whenCreated={(mapInstance) => {
+            //   mapRef.current = mapInstance; // Set the mapRef
+            // }}
           >
             <TileLayer
                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -363,11 +468,11 @@ const CorporateOwnershipScales = ({ csvUrl, geoJsonUrl, width = 900, height = 60
             {/* Key change: Ensure key prop forces re-render if geo data fundamentally changes, style uses function */}
             {filteredGeo && (
                 <GeoJSON
-                    key={JSON.stringify(filteredGeo)} // Add key if filteredGeo can change structure
-                    data={filteredGeo}
-                    style={regionStyle} // Pass the style function
-                    onEachFeature={onEachRegionRevised} // Use the revised handler
-                />
+                key={`${selectedRegion}-${year}-${JSON.stringify(filteredGeo)}`} // Include `year` to force re-render
+                data={filteredGeo}
+                style={regionStyle} // Pass the updated style function
+                onEachFeature={onEachRegionRevised} // Use the revised handler
+              />
              )}
           </MapContainer>
         </div>

@@ -191,3 +191,23 @@ p {
 strong {
   color: #2273f3;
 }
+
+ol {
+  font-size: 1.2rem; /* Match the font size of paragraphs */
+  margin: 20px;      /* Match the margin of paragraphs */
+  line-height: 1.5;  /* Match the line height of paragraphs */
+  text-align: left;  /* Align text to the left */
+  padding-left: 40px; /* Add padding for list indentation */
+}
+
+ol li {
+  margin-bottom: 10px; /* Add spacing between bullet points */
+}
+
+hr {
+  width: 80%; /* Set the width to 80% of the container */
+  border: none; /* Remove the default border */
+  border-top: 4px solid rgba(0, 0, 0, 0.1); /* Add a translucent border */
+  margin: 40px auto; /* Center the horizontal rule and add vertical spacing */
+  /* margin-bottom: 100px; */
+}

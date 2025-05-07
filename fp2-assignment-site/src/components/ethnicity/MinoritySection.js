@@ -8,7 +8,7 @@ import HelpIndicator from '../help_comp/HelpIndicator';
 
 const MinoritySection = () => {
   return (
-    <div className='narrative-block section' id='evict'>
+    <div className='narrative-block section' id='evict' style={{ marginTop: "20px", marginBottom: "20px", maxWidth: "800px" }}>
       <h2>Losing Ground: How Corporate Buying Is Rewriting Boston’s Neighborhoods</h2>
       <h4>As investor ownership rises, we visualize how communities of color are disproportionality pushed-out.</h4>
 
@@ -57,6 +57,8 @@ const MinoritySection = () => {
       portfolios, one forced move at a time.
     </p>
     </div>
+
+    <hr/>
 
     
 
