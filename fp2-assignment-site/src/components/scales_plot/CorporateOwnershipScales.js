@@ -8,6 +8,14 @@ import FancyScale from "./FancyScale";
 import ProfileCard from "./ProfileCard";
 import { interpolateBlues, interpolateReds } from "d3-scale-chromatic";
 
+
+
+
+
+
+
+
+
 /* -----------------------------------------------------------
    Helpers
 ------------------------------------------------------------*/
@@ -89,13 +97,14 @@ const Scale = ({ ratio }) => {
 /**
  * CorporateOwnershipScales React component (v6.2 - Zoom Fix Attempt)
  */
-const CorporateOwnershipScales = ({ csvUrl, geoJsonUrl, width = 900, height = 600 }) => {
+const CorporateOwnershipScales = ({ csvUrl, geoJsonUrl, salesCsvUrl, width = 900, height = 600 }) => {
   const [data, setData] = useState([]);
   const [regionsGeo, setRegionsGeo] = useState(null);
   const [selectedRegion, setSelectedRegion] = useState(null); // UPPER‑CASE
   const [year, setYear] = useState(null);
   // Use useRef for the map instance
   const mapRef = useRef(null); // Initialize with null
+  const [salesData, setSalesData] = useState([]);
 
   /* --- Load CSV & GeoJSON --- */
   useEffect(() => {
@@ -129,7 +138,33 @@ const CorporateOwnershipScales = ({ csvUrl, geoJsonUrl, width = 900, height = 60
       .then((r) => r.json())
       .then(setRegionsGeo)
       .catch(error => console.error("Error loading GeoJSON:", error));
-  }, [csvUrl, geoJsonUrl]);
+
+      d3.csv(salesCsvUrl, (d) => {
+        // console.log("Raw row from sales CSV:", d); // Log each raw row to inspect the data
+        try {
+          return {
+            Neighborhood: d.Neighborhood || "Unknown",
+            Year: +d.Year || null, // Convert Year to a number
+            "Seller Investor Type": d["Seller Investor Type"] || "Unknown",
+            "Sale Count": +d["Sale Count"] || 0, // Convert Sale Count to a number
+            "Total Price Volume": d["Total Price Volume"]
+              ? parseFloat(d["Total Price Volume"].replace(/,/g, "")) // Remove commas and convert to a number
+              : 0,
+          };
+        } catch (error) {
+          console.error("Error parsing row in sales CSV:", d, error);
+          return null; // Skip invalid rows
+        }
+      })
+        .then((rows) => {
+          console.log("Parsed rows from sales CSV:", rows); // Log the parsed rows
+          const validRows = rows.filter((row) => row !== null);
+          setSalesData(validRows);
+        })
+        .catch((error) => {
+          console.error("Error loading or parsing sales CSV:", error);
+        });
+  }, [csvUrl, geoJsonUrl, salesCsvUrl]);
 
   /* --- Filter GeoJSON to only regions present in data --- */
   const filteredGeo = useMemo(() => {
@@ -485,6 +520,8 @@ const CorporateOwnershipScales = ({ csvUrl, geoJsonUrl, width = 900, height = 60
                 setSelectedRegion(null);
                 zoomToFull();
             }}
+            salesData={salesData} // Pass sales data to ProfileCard
+            year={year} // Pass the current year to ProfileCard
             />
         </div>
       </div>

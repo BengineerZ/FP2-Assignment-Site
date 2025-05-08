@@ -19,6 +19,7 @@ const CorpOwned = () => {
       <CorporateOwnershipScales
         csvUrl={ `${process.env.PUBLIC_URL}/scale_data/corp_vs_own_rate.csv` }
         geoJsonUrl={ `${process.env.PUBLIC_URL}/demographics/boston.geojson` }
+        salesCsvUrl={ `${process.env.PUBLIC_URL}/scale_data/neighborhood-viz-data.csv` }
         width={1000}
         height={600}
       />
