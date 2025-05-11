@@ -291,7 +291,7 @@ function HousingDashboard() {
             bounds[1][0] < Math.min(x0, x1) ||
             bounds[0][0] > Math.max(x0, x1) ||
             bounds[1][1] < Math.min(y0, y1) ||
-            bounds[0][1] > Math.max(y0, y1)
+            bounds[0][1] > Math.max(x0, x1)
           );
           if (inDrag) {
             (muni2zips.current[muni] || []).forEach(z => selZips.add(z));
@@ -332,6 +332,9 @@ function HousingDashboard() {
       .attr('y', -10)
       .attr('font-size', '14px')
       .attr('font-weight', 'bold')
+      .style('user-select', 'none') // Disable text selection
+      .style('-webkit-user-select', 'none') // For Safari
+      .style('-ms-user-select', 'none') // For older IE
       .text(() => {
         if (metric === 'cost') return 'Rent Burden Change';
         if (metric === 'investor') return 'Investor Share Change';
@@ -360,6 +363,9 @@ function HousingDashboard() {
       .attr('y', legendHeight + 15)
       .attr('text-anchor', 'start')
       .attr('font-size', '10px')
+      .style('user-select', 'none') // Disable text selection
+      .style('-webkit-user-select', 'none') // For Safari
+      .style('-ms-user-select', 'none') // For older IE
       .text(min.toFixed(1) + (metric !== 'evict' ? '%' : ''));
     
     legendGroup.append('text')
@@ -367,6 +373,9 @@ function HousingDashboard() {
       .attr('y', legendHeight + 15)
       .attr('text-anchor', 'end')
       .attr('font-size', '10px')
+      .style('user-select', 'none') // Disable text selection
+      .style('-webkit-user-select', 'none') // For Safari
+      .style('-ms-user-select', 'none') // For older IE
       .text(max.toFixed(1) + (metric !== 'evict' ? '%' : ''));
       
     // Add a border
@@ -881,60 +890,58 @@ function HousingDashboard() {
 
   return (
     <div style={{ textAlign: 'left' }}>
-      <div style={{ marginBottom: '6px' }}>
-        <label style={{ marginRight: '6px', fontSize: '20px', fontWeight: 'bold' }}>Choropleth metric:</label>
-        <select
-          value={metric}
-          onChange={e => setMetric(e.target.value)}
+      <div style={{ marginBottom: '12px', display: 'flex', gap: '10px' }}>
+        <button
+          onClick={() => setMetric('cost')}
           style={{
-            padding: '8px 14px',
+            padding: '10px 20px',
             borderRadius: '8px',
-            // background: 'linear-gradient(180deg,#f9fbff 0%,#e7efff 100%)',
             border: '1px solid #667',
             fontSize: '14px',
             fontWeight: 'bold',
             cursor: 'pointer',
-            // boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
-            minWidth: '260px',
-            lineHeight: '1.2'
+            backgroundColor: metric === 'cost' ? '#e7efff' : '#f9fbff',
+            color: metric === 'cost' ? '#000' : '#555',
           }}
         >
-          <option value="cost">% change rent cost‑burden</option>
-          <option value="investor">% change investor share</option>
-          <option value="evict">No‑cause evictions (2020–2024 per 100 000 households)</option>
-        </select>
+          % Change Rent Cost‑Burden
+        </button>
+        <button
+          onClick={() => setMetric('investor')}
+          style={{
+            padding: '10px 20px',
+            borderRadius: '8px',
+            border: '1px solid #667',
+            fontSize: '14px',
+            fontWeight: 'bold',
+            cursor: 'pointer',
+            backgroundColor: metric === 'investor' ? '#e7efff' : '#f9fbff',
+            color: metric === 'investor' ? '#000' : '#555',
+          }}
+        >
+          % Change Investor Share
+        </button>
+        <button
+          onClick={() => setMetric('evict')}
+          style={{
+            padding: '10px 20px',
+            borderRadius: '8px',
+            border: '1px solid #667',
+            fontSize: '14px',
+            fontWeight: 'bold',
+            cursor: 'pointer',
+            backgroundColor: metric === 'evict' ? '#e7efff' : '#f9fbff',
+            color: metric === 'evict' ? '#000' : '#555',
+          }}
+        >
+          No‑Cause Evictions
+        </button>
       </div>
-
-      {/* <div style={{ 
-        padding: '8px 16px',
-        marginBottom: '12px',
-        backgroundColor: 'rgba(255,248,220,0.7)',
-        border: '1px solid #e0d0a0',
-        borderRadius: '6px',
-        fontSize: '15px',
-        display: 'flex',
-        alignItems: 'center',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-      }}>
-        <span style={{ marginRight: '8px', fontSize: '18px' }}>💡</span>
-        <span><strong>Tip:</strong> Hover over the map or data points to see relationships.</span>
-      </div> */}
 
       <div style={{ display: 'flex', gap: '18px' }}>
         <svg ref={mapRef} width={MAP_W} height={MAP_H} style={{ border: '0px solid #ccc' }} />
         <svg ref={scatterRef} width={SCATTER} height={SCATTER} />
       </div>
-
-      {/* <div style={{ marginTop: '28px', fontSize: '14px', lineHeight: '1.5' }}>
-        <h4 style={{ marginBottom: '8px' }}>Data sources</h4>
-        <ul style={{ paddingLeft: '20px', margin: 0 }}>
-          <li>IPUMS NHGIS, ACS 5‑year estimates 2009‑13 (dataset ds201) and 2019‑23 (dataset ds267) for renter cost‑burden metrics citeturn0file0turn0file1</li>
-          <li>Massachusetts CHIA <em>2022 ZIP Code List</em> for municipality‑ZIP cross‑walk</li>
-          <li>MAPC Regional Residential Sales file (2020‑2024) for use‑code‑filtered purchase counts</li>
-          <li>Massachusetts Trial Court Electronic Case Access: no‑cause eviction filings (2020‑2024)</li>
-          <li>MAPC <em>Municipalities</em> GeoJSON (simplified) for map polygons</li>
-        </ul>
-      </div> */}
     </div>
   );
 }
