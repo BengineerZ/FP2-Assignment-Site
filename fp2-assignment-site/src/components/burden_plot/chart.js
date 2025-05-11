@@ -576,13 +576,13 @@ function HousingDashboard() {
       .domain(costExtent)
       .interpolator(d3.interpolateRdBu);
 
-    // Points - modified to use rent burden for color and have consistent hover behavior
+    // Points - modified to use a fixed radius for all circles
     g.selectAll('circle')
       .data(muniRecords)
       .join('circle')
       .attr('cx', d => x(d.investorChange))
       .attr('cy', d => y(d.evictions))
-      .attr('r', d => scatterR(d.evictions))
+      .attr('r', 5) // Fixed radius for all circles
       .attr('fill', d => Number.isFinite(d.costChange) ? costColorScale(d.costChange) : '#888')
       .attr('stroke', d => d.zips.some(z => hoverZips.has(z)) ? '#000' : '#444')
       .attr('stroke-width', d => d.zips.some(z => hoverZips.has(z)) ? 2 : 0.4)
