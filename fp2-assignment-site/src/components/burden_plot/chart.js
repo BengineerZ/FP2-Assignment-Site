@@ -53,6 +53,9 @@ function HousingDashboard() {
   const scatterBaseLockedZips  = useRef([]);
   const scatterShiftPressed    = useRef(false);
   const lastDragLockedZips     = useRef([]);
+  // Store a reference to the scatter plot selection for direct manipulation
+  // This will help us synchronize map and scatter selections without state updates
+  const scatterSelectionRef = useRef(null);
 
   //--------------------------------------------------------------------
   // Load & prepare data  ------------------------------------------------
@@ -130,6 +133,13 @@ function HousingDashboard() {
       bounds: path.bounds(f)   // [[x0,y0],[x1,y1]]
     }));
 
+    // Set cursor style for the entire SVG canvas
+    svg.style('cursor', 'crosshair');
+
+    // Create a shared temp selection set to track during drag operations
+    // This helps reduce state updates during dragging
+    const tempSelectionZips = new Set();
+
     // Add text label for municipality name on hover - bigger and lower position
     const muniLabel = svg.append('text')
       .attr('x', 40)         // Moved right from 10 to 20
@@ -198,9 +208,15 @@ function HousingDashboard() {
       .on('mouseover', (_, d) => {
         const z = muni2zips.current[d.properties.municipal] || [];
         setHoverZips(new Set(z));
+        svg.style('cursor', 'crosshair'); // Ensure cursor remains consistent
       })
-      .on('mouseout', () => setHoverZips(new Set()))
-      .on('click', (_, d) => {
+      .on('mouseout', () => {
+        setHoverZips(new Set());
+        svg.style('cursor', 'crosshair'); // Reset cursor on mouse out
+      })
+      .on('mousedown', () => svg.style('cursor', 'crosshair')) // Keep crosshair on click
+      .on('mouseup', () => svg.style('cursor', 'crosshair')) // Reset to crosshair on release
+      .on('click', (_, d) => { // Add missing continuation operator
         const z = muni2zips.current[d.properties.municipal] || [];
         setLockedZips(prev => {
           const s = new Set(prev);
@@ -252,25 +268,71 @@ function HousingDashboard() {
         .attr('width', Math.abs(x1 - x0))
         .attr('height', Math.abs(y1 - y0));
 
-      const selZips = new Set();
+      // Clear the temporary selection set instead of creating a new one
+      tempSelectionZips.clear();
+      
+      // Add currently selected municipalities to the temp selection
       boundsCache.forEach(({ muni, bounds }) => {
         const inDrag = !(
           bounds[1][0] < Math.min(x0, x1) ||
           bounds[0][0] > Math.max(x0, x1) ||
           bounds[1][1] < Math.min(y0, y1) ||
-          bounds[0][1] > Math.max(y0, y1)
+          bounds[0][1] > Math.max(x0, y1)
         );
         if (inDrag) {
-          (muni2zips.current[muni] || []).forEach(z => selZips.add(z));
+          (muni2zips.current[muni] || []).forEach(z => tempSelectionZips.add(z));
         }
       });
+      
+      // Include base selection if shift key is pressed
       const base = dragShiftPressed.current ? dragBaseLockedZips.current : [];
-      const merged = new Set(base);
-      selZips.forEach(z => merged.add(z));
+      base.forEach(z => tempSelectionZips.add(z));
+      
+      // Apply visual changes directly to avoid React state updates during drag
+      // This is what prevents the flashing
+      svg.selectAll('path')
+        .attr('stroke-width', d => {
+          const r = muniMap[d.properties.municipal];
+          const v =
+            metric === 'cost'     ? r?.costChange :
+            metric === 'investor' ? r?.investorChange :
+            r?.evictions;
+          if (v === null || !Number.isFinite(v)) return 0;
+          const zips = muni2zips.current[d.properties.municipal] || [];
+          return zips.some(z => tempSelectionZips.has(z)) ? 2 : 0.4;
+        });
+      
+      // Update municipality label directly without using React state
+      if (tempSelectionZips.size > 0) {
+        const munis = new Set();
+        muniRecords.forEach(r => {
+          if (r.zips.some(z => tempSelectionZips.has(z))) {
+            munis.add(r.muni);
+          }
+        });
+        if (munis.size === 1) {
+          svg.select('text').text(Array.from(munis)[0]);
+        } else {
+          svg.select('text').text('Multiple Selected');
+        }
+      } else {
+        svg.select('text').text('');
+      }
+      
+      // CRITICAL ADDITION: Update scatter plot directly during map drag
+      // This prevents the flashing between the two visualizations
+      const scatterG = d3.select(scatterRef.current).select('g');
+      if (!scatterG.empty()) {
+        scatterG.selectAll('circle')
+          .attr('stroke-width', d => d.zips && d.zips.some(z => tempSelectionZips.has(z)) ? 2 : 0.4)
+          .attr('stroke', d => d.zips && d.zips.some(z => tempSelectionZips.has(z)) ? '#000' : '#444');
+      }
+      
+      // Only throttled updates to the React state during drag
       const now = Date.now();
-      if (now - lastBrushTimeRef.current > 33) {
+      if (now - lastBrushTimeRef.current > 150) { // Increased throttle time from 33ms to 150ms
         lastBrushTimeRef.current = now;
-        setHoverZips(merged);
+        setHoverZips(new Set(tempSelectionZips));
       }
     });
 
@@ -291,14 +353,14 @@ function HousingDashboard() {
             bounds[1][0] < Math.min(x0, x1) ||
             bounds[0][0] > Math.max(x0, x1) ||
             bounds[1][1] < Math.min(y0, y1) ||
-            bounds[0][1] > Math.max(x0, x1)
+            bounds[0][1] > Math.max(x0, y1)
           );
           if (inDrag) {
             (muni2zips.current[muni] || []).forEach(z => selZips.add(z));
           }
         });
         setLockedZips(prev => {
-          const result = new Set(prev);
+          const result = new Set(dragShiftPressed.current ? prev : []);
           selZips.forEach(z => result.add(z));
           return Array.from(result);
         });
@@ -454,6 +516,9 @@ function HousingDashboard() {
       .style('-webkit-user-select', 'none')
       .style('-ms-user-select', 'none');
 
+    // Set cursor style for the scatter plot SVG canvas
+    svg.style('cursor', 'crosshair');
+
     // Increase bottom margin even further to prevent text cutoff
     const m = { t: 40, r: 30, b: 150, l: 70 };
     const w = SCATTER - m.l - m.r;
@@ -568,8 +633,16 @@ function HousingDashboard() {
       .attr('stroke', d => d.zips.some(z => hoverZips.has(z)) ? '#000' : '#444')
       .attr('stroke-width', d => d.zips.some(z => hoverZips.has(z)) ? 2 : 0.4)
       .attr('opacity', 0.8)
-      .on('mouseover', (_, d) => setHoverZips(new Set(d.zips)))
-      .on('mouseout', () => setHoverZips(new Set()))
+      .on('mouseover', (_, d) => {
+        setHoverZips(new Set(d.zips));
+        svg.style('cursor', 'crosshair'); // Ensure cursor remains consistent
+      })
+      .on('mouseout', () => {
+        setHoverZips(new Set());
+        svg.style('cursor', 'crosshair'); // Reset cursor on mouse out
+      })
+      .on('mousedown', () => svg.style('cursor', 'crosshair')) // Keep crosshair on click
+      .on('mouseup', () => svg.style('cursor', 'crosshair')) // Reset to crosshair on release
       .on('click', function(event, d) {
         // Prevent the SVG‑level drag logic from treating this click as a blank‑area press
         event.stopPropagation();
@@ -604,6 +677,9 @@ function HousingDashboard() {
       .style('display', 'none')
       .style('pointer-events', 'none');
 
+    // Create a shared temp selection set to track during scatter drag operations
+    const tempScatterSelection = new Set();
+
     // Attach drag events to svg
     svg.on('mousedown.scatter', function(event) {
       if (event.target.tagName !== 'circle') {
@@ -631,7 +707,10 @@ function HousingDashboard() {
         .attr('y', Math.min(y0, y1))
         .attr('width', Math.abs(x1 - x0))
         .attr('height', Math.abs(y1 - y0));
-      const selZips = new Set();
+      
+      // Clear temporary selection
+      tempScatterSelection.clear();
+      
       muniRecords.forEach(d => {
         const px = x(d.investorChange);
         const py = y(d.evictions);
@@ -639,13 +718,59 @@ function HousingDashboard() {
           px >= Math.min(x0, x1) && px <= Math.max(x0, x1) &&
           py >= Math.min(y0, y1) && py <= Math.max(y0, y1)
         ) {
-          d.zips.forEach(z => selZips.add(z));
+          d.zips.forEach(z => tempScatterSelection.add(z));
         }
       });
+      
+      // Include base selection if shift key was pressed
       const base = scatterShiftPressed.current ? scatterBaseLockedZips.current : [];
-      const merged = new Set(base);
-      selZips.forEach(z => merged.add(z));
-      setHoverZips(merged);
+      base.forEach(z => tempScatterSelection.add(z));
+      
+      // Apply visual highlight changes directly without state updates
+      g.selectAll('circle')
+        .attr('stroke-width', d => d.zips.some(z => tempScatterSelection.has(z)) ? 2 : 0.4)
+        .attr('stroke', d => d.zips.some(z => tempScatterSelection.has(z)) ? '#000' : '#444');
+      
+      // CRITICAL ADDITION: Update map directly during scatter drag
+      // This prevents the flashing between the two visualizations
+      if (geo && muniRecords) {
+        d3.select(mapRef.current).selectAll('path')
+          .attr('stroke-width', d => {
+            const r = muniRecords.find(m => m.muni === d.properties.municipal);
+            const val =
+              metric === 'cost'     ? r?.costChange :
+              metric === 'investor' ? r?.investorChange :
+              r?.evictions;
+            if (!Number.isFinite(val)) return 0;
+            const zips = muni2zips.current[r.muni] || [];
+            return zips.some(z => tempScatterSelection.has(z)) ? 2 : 0.4;
+          });
+            
+        // Update municipality label on map
+        const mapSvg = d3.select(mapRef.current);
+        if (tempScatterSelection.size > 0) {
+          const munis = new Set();
+          muniRecords.forEach(r => {
+            if (r.zips.some(z => tempScatterSelection.has(z))) {
+              munis.add(r.muni);
+            }
+          });
+          if (munis.size === 1) {
+            mapSvg.select('text').text(Array.from(munis)[0]);
+          } else {
+            mapSvg.select('text').text('Multiple Selected');
+          }
+        } else {
+          mapSvg.select('text').text('');
+        }
+      }
+      
+      // Throttled updates to React state during drag
+      const now = Date.now();
+      if (now - lastBrushTimeRef.current > 150) { // Increased from 33ms to 150ms
+        lastBrushTimeRef.current = now;
+        setHoverZips(new Set(tempScatterSelection));
+      }
     });
 
     svg.on('mouseup.scatter', function(event) {
@@ -890,6 +1015,16 @@ function HousingDashboard() {
 
   return (
     <div style={{ textAlign: 'left' }}>
+      <h1 style={{ 
+        fontSize: '24px', 
+        marginBottom: '20px',
+        color: '#336',
+        textAlign: 'center',
+        fontWeight: 'bold'
+      }}>
+        Investor Activity versus Rent Burden and Evictions in Greater Boston
+      </h1>
+      
       <div style={{ marginBottom: '12px', display: 'flex', gap: '10px' }}>
         <button
           onClick={() => setMetric('cost')}
