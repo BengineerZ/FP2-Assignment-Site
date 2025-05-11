@@ -1,27 +1,43 @@
 #bar {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  box-sizing: border-box;
-}
-
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+  }
+  
 .bar {
-  transition: opacity 0.5s ease;
+transition: opacity 0.5s ease;
 }
 
 .line1 {
-  stroke: #ff5733;
-  stroke-width: 2;
+stroke: #ff5733;
+stroke-width: 2;
 }
 
 .line2 {
-  stroke: #3375ff;
-  stroke-width: 2;
+stroke: #3375ff;
+stroke-width: 2;
 }
 
 .annotation {
-  font-family: 'Helvetica Neue', Arial, sans-serif;
-  font-weight: bold;
+font-family: 'Helvetica Neue', Arial, sans-serif;
+font-weight: bold;
 }
+
+/* In your BarChart.css (uncommented and enhanced) :contentReference[oaicite:0]{index=0}:contentReference[oaicite:1]{index=1} */
+.tooltip {
+    position: absolute;
+    background: white;
+    border: 1px solid #ccc;
+    padding: 6px 8px;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    font-size: 12px;
+    line-height: 1.2;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.1s ease-in-out;
+    white-space: nowrap;
+  }

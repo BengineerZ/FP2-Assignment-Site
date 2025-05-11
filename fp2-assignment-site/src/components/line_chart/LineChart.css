@@ -1,0 +1,91 @@
+/* LineChart.css */
+
+.chart-container {
+    position: relative;
+  }
+  
+  .line {
+    fill: none;
+    stroke: red;
+    stroke-width: 4px;
+    opacity: 0.2;
+    transition: opacity 0.2s ease, stroke-width 0.2s ease;
+    cursor: pointer;
+  }
+  
+  .line--highlight {
+    stroke-width: 6px;
+    opacity: 1;
+  }
+  
+  .census-line {
+    fill: none;
+    stroke: blue;
+    stroke-width: 4px;    
+    opacity: 1;
+    pointer-events: stroke;       /* allow hovering on the blue stroke */
+    transition: stroke-width 0.2s ease, opacity 0.2s ease;
+    }
+
+    /* on hover, thicken and brighten it */
+    .census-line:hover {
+    stroke-width: 6px;
+    opacity: 1;
+    cursor: pointer;
+    }
+  
+  .tooltip {
+    position: absolute;
+    pointer-events: none;
+    background: white;
+    border: 1px solid #aaa;
+    padding: 6px 8px;
+    font-size: 0.85rem;
+    border-radius: 3px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+    opacity: 0;
+    transition: opacity 0.1s ease;
+    z-index: 10;
+  }
+  
+  .axis-label {
+    font-size: 0.9rem;
+    fill: #333;
+    pointer-events: none;
+  }
+  
+  .x-axis-label {
+    /* if you want extra styling, e.g.: */
+    /* font-weight: bold; */
+  }
+  
+  .y-axis-label {
+    /* font-style: italic; */
+  }
+
+.legend text {
+    font-size: 1.0rem;
+    fill: #333;
+    pointer-events: none;
+  }
+  
+  .legend line {
+    stroke-width: 2px;
+    pointer-events: none;
+  }
+  /* keep the visible dotted line thin */
+.event-line {
+    stroke: black;
+    stroke-width: 1px;
+    stroke-dasharray: 4 4;
+    pointer-events: none;        /* let the hotspot handle events */
+  }
+  
+  /* invisible but wide “hot-zone” for easier hovering */
+  .event-hotspot {
+    stroke: transparent;
+    stroke-width: 10px;         /* ≈10px on either side of the visible line */
+    pointer-events: stroke;      /* only the stroke is hoverable */
+    cursor: pointer;
+  }
+  
