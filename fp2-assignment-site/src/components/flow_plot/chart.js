@@ -50,6 +50,13 @@ function FlowChart({ csvUrl = `${process.env.PUBLIC_URL}/mapc_region_residential
     house: false // Add house hover state
   });
 
+  // Add click state tracking for persistent display
+  const [clickedState, setClickedState] = useState({
+    investor: false,
+    noninvestor: false,
+    house: false
+  });
+
   function clusterX(d) {
     // Everyone clusters at CLUSTER_X
     return clusterPositions.x;
@@ -872,6 +879,7 @@ function FlowChart({ csvUrl = `${process.env.PUBLIC_URL}/mapc_region_residential
                   fontSize={DOLLAR_SIGN_SIZE}
                   fontWeight="bold"
                   opacity={opacity}
+                  style={{ userSelect: 'none' }}
                 >
                   $
                 </text>
@@ -887,11 +895,16 @@ function FlowChart({ csvUrl = `${process.env.PUBLIC_URL}/mapc_region_residential
               cy={clusterPositions.nonInvY}
               r={CLUSTER_CIRCLE_RADIUS}
               fill="blue"
-              fillOpacity={hoverState.noninvestor ? 0.8 : 0.05}
+              fillOpacity={(hoverState.noninvestor || clickedState.noninvestor) ? 0.8 : 0.05}
               stroke="blue"
-              strokeWidth={CLUSTER_CIRCLE_STROKE_WIDTH}
+              strokeWidth={clickedState.noninvestor ? 4 : CLUSTER_CIRCLE_STROKE_WIDTH}
+              strokeDasharray={clickedState.noninvestor ? "8,4" : "none"}
               onMouseEnter={() => setHoverState(prev => ({ ...prev, noninvestor: true }))}
               onMouseLeave={() => setHoverState(prev => ({ ...prev, noninvestor: false }))}
+              onClick={() => setClickedState(prev => ({ 
+                ...prev, 
+                noninvestor: !prev.noninvestor 
+              }))}
               style={{ cursor: 'pointer' }}
             />
             
@@ -912,21 +925,56 @@ function FlowChart({ csvUrl = `${process.env.PUBLIC_URL}/mapc_region_residential
               </text>
             </g>
             
-            {/* Non-investor profit counter - only visible on hover */}
+            {/* Non-investor profit counter - visible on hover or click */}
             <text 
               x={clusterPositions.x} 
-              y={clusterPositions.nonInvY}
+              y={clusterPositions.nonInvY - 15}
               textAnchor="middle" 
               dominantBaseline="middle"
               fontFamily="Helvetica Neue"
               fontWeight="bold"
               fontSize="18px"
               fill="white"
-              opacity={hoverState.noninvestor ? 1 : 0}
+              opacity={hoverState.noninvestor || clickedState.noninvestor ? 1 : 0}
+              style={{ userSelect: 'none' }}
               pointerEvents="none"
             >
               Non-Investor Profit: ${Math.round(nonInvProfit).toLocaleString()}
             </text>
+            
+            {/* "Click to pin" hint when hovering but not clicked */}
+            {hoverState.noninvestor && !clickedState.noninvestor && (
+              <text
+                x={clusterPositions.x}
+                y={clusterPositions.nonInvY + 25} 
+                textAnchor="middle"
+                dominantBaseline="middle"
+                fontFamily="Helvetica Neue"
+                fontSize="16px"
+                fill="white"
+                style={{ userSelect: 'none' }}
+                pointerEvents="none"
+              >
+                (click to pin)
+              </text>
+            )}
+            
+            {/* "Pinned" indicator for non-investor when clicked */}
+            {clickedState.noninvestor && (
+              <text
+                x={clusterPositions.x}
+                y={clusterPositions.nonInvY + 25} 
+                textAnchor="middle"
+                dominantBaseline="middle"
+                fontFamily="Helvetica Neue"
+                fontSize="16px"
+                fill="white"
+                style={{ userSelect: 'none' }}
+                pointerEvents="none"
+              >
+                (click to unpin)
+              </text>
+            )}
 
             {/* Investor cluster */}
             <circle
@@ -934,11 +982,16 @@ function FlowChart({ csvUrl = `${process.env.PUBLIC_URL}/mapc_region_residential
               cy={clusterPositions.invY}
               r={CLUSTER_CIRCLE_RADIUS}
               fill="red"
-              fillOpacity={hoverState.investor ? 0.8 : 0.05}
+              fillOpacity={(hoverState.investor || clickedState.investor) ? 0.8 : 0.05}
               stroke="red"
-              strokeWidth={CLUSTER_CIRCLE_STROKE_WIDTH}
+              strokeWidth={clickedState.investor ? 4 : CLUSTER_CIRCLE_STROKE_WIDTH}
+              strokeDasharray={clickedState.investor ? "8,4" : "none"}
               onMouseEnter={() => setHoverState(prev => ({ ...prev, investor: true }))}
               onMouseLeave={() => setHoverState(prev => ({ ...prev, investor: false }))}
+              onClick={() => setClickedState(prev => ({ 
+                ...prev, 
+                investor: !prev.investor 
+              }))}
               style={{ cursor: 'pointer' }}
             />
             
@@ -959,21 +1012,56 @@ function FlowChart({ csvUrl = `${process.env.PUBLIC_URL}/mapc_region_residential
               </text>
             </g>
             
-            {/* Investor profit counter - only visible on hover */}
+            {/* Investor profit counter - visible on hover or click */}
             <text 
               x={clusterPositions.x} 
-              y={clusterPositions.invY}
+              y={clusterPositions.invY - 15}
               textAnchor="middle" 
               dominantBaseline="middle"
               fontFamily="Helvetica Neue"
               fontWeight="bold"
               fontSize="18px"
               fill="white"
-              opacity={hoverState.investor ? 1 : 0}
+              opacity={hoverState.investor || clickedState.investor ? 1 : 0}
+              style={{ userSelect: 'none' }}
               pointerEvents="none"
             >
               Investor Profit: ${Math.round(invProfit).toLocaleString()}
             </text>
+            
+            {/* "Click to pin" hint when hovering but not clicked */}
+            {hoverState.investor && !clickedState.investor && (
+              <text
+                x={clusterPositions.x}
+                y={clusterPositions.invY + 25} 
+                textAnchor="middle"
+                dominantBaseline="middle"
+                fontFamily="Helvetica Neue"
+                fontSize="16px"
+                fill="white"
+                style={{ userSelect: 'none' }}
+                pointerEvents="none"
+              >
+                (click to pin)
+              </text>
+            )}
+            
+            {/* "Pinned" indicator for investor when clicked */}
+            {clickedState.investor && (
+              <text
+                x={clusterPositions.x}
+                y={clusterPositions.invY + 25} 
+                textAnchor="middle"
+                dominantBaseline="middle"
+                fontFamily="Helvetica Neue"
+                fontSize="16px"
+                fill="white"
+                style={{ userSelect: 'none' }}
+                pointerEvents="none"
+              >
+                (click to unpin)
+              </text>
+            )}
           </g>
 
           {/* Cluster labels - moved below circles and linked to circle positions */}
@@ -1002,7 +1090,7 @@ function FlowChart({ csvUrl = `${process.env.PUBLIC_URL}/mapc_region_residential
             Investor Average
           </text>
 
-          {/* House emoji at spawning point with hover effect - moved AFTER money bubbles so it appears ON TOP */}
+          {/* House emoji at spawning point with hover and click effects */}
           <g>
             <text
               x={SPAWN_X}
@@ -1017,9 +1105,27 @@ function FlowChart({ csvUrl = `${process.env.PUBLIC_URL}/mapc_region_residential
               }}
               onMouseEnter={() => setHoverState(prev => ({ ...prev, house: true }))}
               onMouseLeave={() => setHoverState(prev => ({ ...prev, house: false }))}
+              onClick={() => setClickedState(prev => ({ 
+                ...prev, 
+                house: !prev.house 
+              }))}
             >
               🏠
             </text>
+            
+            {/* Dotted underline when clicked */}
+            {clickedState.house && (
+              <line
+                x1={SPAWN_X - 60}
+                y1={SPAWN_Y + 55}
+                x2={SPAWN_X + 60}
+                y2={SPAWN_Y + 55}
+                stroke="#666"
+                strokeWidth="3"
+                strokeDasharray="8,4"
+                opacity={0.8}
+              />
+            )}
             
             {/* Info tooltip indicator for house */}
             <g transform={`translate(${SPAWN_X + 40}, ${SPAWN_Y + 40})`}>
@@ -1038,7 +1144,7 @@ function FlowChart({ csvUrl = `${process.env.PUBLIC_URL}/mapc_region_residential
               </text>
             </g>
             
-            {/* House price display on hover - updated text */}
+            {/* House price display on hover or click */}
             <text
               x={SPAWN_X}
               y={SPAWN_Y - 120} 
@@ -1048,7 +1154,7 @@ function FlowChart({ csvUrl = `${process.env.PUBLIC_URL}/mapc_region_residential
               fontWeight="bold"
               fontSize="22px"
               fill="#333"
-              opacity={hoverState.house ? 1 : 0}
+              opacity={hoverState.house || clickedState.house ? 1 : 0}
               pointerEvents="none"
             >
               Boston Home Price Index:
@@ -1062,11 +1168,43 @@ function FlowChart({ csvUrl = `${process.env.PUBLIC_URL}/mapc_region_residential
               fontWeight="bold"
               fontSize="24px"
               fill="#1A6692"
-              opacity={hoverState.house ? 1 : 0}
+              opacity={hoverState.house || clickedState.house ? 1 : 0}
               pointerEvents="none"
             >
               {getHomePrice().toFixed(2)}
             </text>
+            
+            {/* "Click to pin" hint when hovering but not clicked */}
+            {hoverState.house && !clickedState.house && (
+              <text
+                x={SPAWN_X}
+                y={SPAWN_Y - 160} 
+                textAnchor="middle"
+                dominantBaseline="middle"
+                fontFamily="Helvetica Neue"
+                fontSize="16px"
+                fill="#333"
+                pointerEvents="none"
+              >
+                (click to pin)
+              </text>
+            )}
+            
+            {/* "Pinned" indicator for house price when clicked */}
+            {clickedState.house && (
+              <text
+                x={SPAWN_X}
+                y={SPAWN_Y - 160} 
+                textAnchor="middle"
+                dominantBaseline="middle"
+                fontFamily="Helvetica Neue"
+                fontSize="16px"
+                fill="#333"
+                pointerEvents="none"
+              >
+                (click to unpin)
+              </text>
+            )}
             
             {/* Label under house */}
             <text
