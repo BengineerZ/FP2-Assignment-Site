@@ -39,7 +39,7 @@ const EvictionSection = () => {
 
       </div>
 
-      <HelpIndicator helpText="Change the Chloropleth metric to visualise different statistics! Hover over each region to see where the eviction rates and investor share falls on the scatter plot. Also, click a municipality on the map and see where it falls on the scatter plot, and vice versa! You can click and drag to select multiple, or click multiple individual ones.">
+      <HelpIndicator helpText="Hover or click municipalities to highlight; click multiple or click+drag to multi-select. You can also pick a specific metric!">
         Click the lightbulb for help!
       </HelpIndicator>
 
