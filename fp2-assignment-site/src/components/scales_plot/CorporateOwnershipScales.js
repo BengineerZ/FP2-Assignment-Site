@@ -117,7 +117,7 @@ const CorporateOwnershipScales = ({ csvUrl, geoJsonUrl, salesCsvUrl, width = 900
         year: +d.Year, // Use Year
         corporate_sales: corpSales, // Use corp
         owner_sales: ownerSales, // Use own
-        total_sales: corpSales + ownerSales, // Calculate total_sales
+        total_sales: (corpSales + ownerSales)*0. + 1.0, // Calculate total_sales
       };
     }).then((rows) => {
       setData(rows);
@@ -233,7 +233,7 @@ const CorporateOwnershipScales = ({ csvUrl, geoJsonUrl, salesCsvUrl, width = 900
   //   return base === 0 ? (current === 0 ? 1 : Infinity) : current / base ; // Handle base=0 case explicitly
   // }, [baselineRate, currentRate, selectedRegion, year]);
   const ratio = useMemo(() => {
-    const flatRate = 0.1; // Flat rate of 10%
+    const flatRate = 0.075; // Flat rate of 10%
     if (!year) return 1; // Ensure year is set
     return flatRate === 0 ? (currentRate === 0 ? 1 : Infinity) : currentRate / flatRate;
   }, [currentRate, year]);
@@ -313,7 +313,7 @@ const CorporateOwnershipScales = ({ csvUrl, geoJsonUrl, salesCsvUrl, width = 900
     const name = getRegionName(feature.properties);
   
     // Default balanced rate (10%)
-    const balancedRate = 0.1;
+    const balancedRate = 0.075;
   
     // Get the corporate ownership rate for the current region
     const regionRate = (() => {
@@ -418,7 +418,7 @@ const CorporateOwnershipScales = ({ csvUrl, geoJsonUrl, salesCsvUrl, width = 900
   
       // Define the color scale and labels
       const grades = [0., 0.05, 0.1, 0.2, 0.5]; // Thresholds for corporate ownership rates
-      const labels = ["0%", "5%", "10%", "20%", "50%+"];
+      const labels = ["0%", "5%", "7.5%", "15%", "30%+"];
   
       // Generate the legend content
       div.innerHTML = "<body>Corporate Ownership Rate</body>";

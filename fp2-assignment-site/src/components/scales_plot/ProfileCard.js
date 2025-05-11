@@ -198,7 +198,7 @@ export default function ProfileCard({ region, ratio, currentRate, onClose, sales
             <strong>{(currentRate * 100).toFixed(1)} %</strong>
           </p>
           <p className="profile-card__text">
-            Relative ownership rate shown between owner-occupied properties and corporate-owned, compared to 'balanced' 10% level.
+            Relative ownership rate shown between owner-occupied properties and corporate-owned, compared to a qualitatively 'balanced' 7.5% level.
           </p>
         </div>
       )}
