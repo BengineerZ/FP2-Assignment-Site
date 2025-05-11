@@ -1,10 +1,6 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import * as d3 from "d3";
 import "./LineChart.css";
-
-
-
-
 
 
 export default function AnimatedLineChart({
@@ -14,6 +10,7 @@ export default function AnimatedLineChart({
 }) {
   const svgRef = useRef();
   const tooltipRef = useRef();
+  const [zoom, setZoom] = useState(false);
 
   useEffect(() => {
     // clear any old content
@@ -64,7 +61,12 @@ export default function AnimatedLineChart({
         ]))
         .range([0, chartW]);
 
-      const y = d3.scaleLinear()
+      
+      
+      
+      
+      
+        /*const y = d3.scaleLinear()
         .domain([
           0,
           d3.max([
@@ -72,7 +74,30 @@ export default function AnimatedLineChart({
             d3.max(rawCensus, d => d.income)
           ])
         ]).nice()
+        .range([chartH, 0]);*/
+      // Determine y-domain based on zoom toggle
+      const maxPrice  = d3.max(rawData, d => d.price);
+      const maxIncome = d3.max(rawCensus, d => d.income);
+      const overallMax = Math.max(maxPrice, maxIncome);
+
+      let yDomain;
+      if (zoom) {
+        const incomes = rawCensus.map(d => d.income);
+        const minInc = d3.min(incomes);
+        const maxInc = d3.max(incomes);
+        yDomain = [minInc, maxInc];
+      } else {
+        yDomain = [0, overallMax];
+      }
+      const y = d3.scaleLinear()
+        .domain(yDomain)
+        .nice()
         .range([chartH, 0]);
+
+
+
+
+
 
       // axes
       g.append("g")
@@ -300,11 +325,6 @@ export default function AnimatedLineChart({
         .ease(d3.easeCubicOut)
         .attr("stroke-dashoffset", 0);
       lines.raise();
-      
-
-
-    
-
   
 
     }).catch(err => console.error("Error loading CSVs:", err));
@@ -312,6 +332,9 @@ export default function AnimatedLineChart({
 
   return (
     <div className="chart-container">
+      <button className="zoom-button" onClick={() => setZoom(z => !z)}>
+        {zoom ? "Zoom Out" : "Zoom Into Income"}
+      </button>
       <svg ref={svgRef}></svg>
       <div ref={tooltipRef} className="tooltip"></div>
     </div>

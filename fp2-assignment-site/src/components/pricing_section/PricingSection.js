@@ -16,7 +16,7 @@ const PricingSection = () => {
       </p>
       </div>
 
-      <HelpIndicator helpText="Hover over any red line to see the median home price for that neighborhood and the corresponding Census-reported median income! Check out the dotted black lines for significant events which affected the housing market.">
+      <HelpIndicator helpText="Hover over any red line to see the median home price for that neighborhood and the corresponding Census-reported median income! Check out the dotted black lines for significant events which affected the housing market. Toggle with the zoom to see what the income curve looks like!">
         Hover for help!
       </HelpIndicator>
       
