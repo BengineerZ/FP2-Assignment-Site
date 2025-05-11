@@ -162,6 +162,7 @@ function HousingDashboard() {
       .attr('rx', 4)         // Rounded corners
       .attr('ry', 4)
       .style('visibility', 'hidden') // Start hidden, will show when text appears
+      .style('pointer-events', 'none') // Prevent cursor change on hover
       .attr('class', 'muni-label-bg');
 
     // Polygons
@@ -277,7 +278,7 @@ function HousingDashboard() {
           bounds[1][0] < Math.min(x0, x1) ||
           bounds[0][0] > Math.max(x0, x1) ||
           bounds[1][1] < Math.min(y0, y1) ||
-          bounds[0][1] > Math.max(x0, y1)
+          bounds[0][1] > Math.max(y0, y1)
         );
         if (inDrag) {
           (muni2zips.current[muni] || []).forEach(z => tempSelectionZips.add(z));
@@ -348,17 +349,17 @@ function HousingDashboard() {
         }
       } else {
         const selZips = new Set();
-        boundsCache.forEach(({ muni, bounds }) => {
-          const inDrag = !(
-            bounds[1][0] < Math.min(x0, x1) ||
-            bounds[0][0] > Math.max(x0, x1) ||
-            bounds[1][1] < Math.min(y0, y1) ||
-            bounds[0][1] > Math.max(x0, y1)
-          );
-          if (inDrag) {
-            (muni2zips.current[muni] || []).forEach(z => selZips.add(z));
-          }
-        });
+      boundsCache.forEach(({ muni, bounds }) => {
+        const inDrag = !(
+          bounds[1][0] < Math.min(x0, x1) ||
+          bounds[0][0] > Math.max(x0, x1) ||
+          bounds[1][1] < Math.min(y0, y1) ||
+          bounds[0][1] > Math.max(y0, y1)
+        );
+        if (inDrag) {
+          (muni2zips.current[muni] || []).forEach(z => selZips.add(z));
+        }
+      });
         setLockedZips(prev => {
           const result = new Set(dragShiftPressed.current ? prev : []);
           selZips.forEach(z => result.add(z));
