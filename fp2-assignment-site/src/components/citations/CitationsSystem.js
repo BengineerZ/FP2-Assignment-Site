@@ -86,13 +86,16 @@ export const CitationsList = ({
 
   return (
     <section id="citations-section" ref={sectionRef} className={className}>
-      <h2 className={headingClassName}>Citations</h2>
+      <h2 className={headingClassName}>Acknowledgement of Data Sources</h2>
       <ol className={listClassName}>
         {citations.map((c, i) => (
           <li key={i} className={itemClassName}>
             {c.content}
           </li>
         ))}
+        <li className={itemClassName}>
+          This project was developed with guidance and feedback from the <a href="https://www.mapc.org/">Metropolitan Area Planning Commission (MAPC)</a>.
+        </li>
       </ol>
     </section>
   );

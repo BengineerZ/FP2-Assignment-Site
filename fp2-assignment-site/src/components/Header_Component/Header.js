@@ -36,8 +36,9 @@ const Header = () => {
         {isScrollComplete && <div className="end-node"><div className="node-middle"></div></div>}
       </div> */}
       <h1>Homes for Profit, Not for People</h1>
-      <h3>Proof of Concept</h3>
       <h4>How has speculative investment contributed to the growing inaccessibility of affordable housing?</h4>
+      <h5>Nitish Dashora, Martin Peticco, Adam Rashid, Ben Zandonati - The Buyout Bandits</h5>
+      
       <House className="house" />
     </header>
   );
