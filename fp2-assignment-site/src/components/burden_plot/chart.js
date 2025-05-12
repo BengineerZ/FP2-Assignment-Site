@@ -826,7 +826,6 @@ function HousingDashboard() {
         lastBrushTimeRef.current = now;
         setHoverZips(new Set(tempScatterSelection));
       }
-<<<<<<< HEAD
     });
 
     svg.on('mouseup.scatter', function(event) {
@@ -857,8 +856,6 @@ function HousingDashboard() {
       scatterDraggingRef.current = false;
       scatterDragStartRef.current = null;
       scatterDragEndRef.current = null;
-=======
->>>>>>> Martin
     });
 
     svg.on('mouseup.scatter', function(event) {
@@ -895,11 +892,7 @@ function HousingDashboard() {
     const legendHeight = 15;
     const legendWidth = w * 0.4;
     const legendX = (w - legendWidth) / 2 - 70;
-<<<<<<< HEAD
     const legendY = h - 230; // Increased from 65 to 80 to move it down
-=======
-    const legendY = h - 190; // Changed from h - 230 to h - 190 (40px lower)
->>>>>>> Martin
     
     // Create gradient definition
     const defs = svg.append('defs');
@@ -1005,13 +998,8 @@ function HousingDashboard() {
       .attr('ry', 10)
       .attr('fill', 'rgba(250, 250, 255, 0.95)')
       .attr('stroke', '#336')
-<<<<<<< HEAD
       .attr('stroke-width', 1.5) // Increased from 1 to 1.5
       .style('filter', 'drop-shadow(3px 3px 4px rgba(0,0,0,0.25))') // Enhanced shadow
-=======
-      .attr('stroke-width', 1.5)
-      .style('filter', 'drop-shadow(3px 3px 4px rgba(0,0,0,0.25))')
->>>>>>> Martin
       .style('pointer-events', 'none');
     
     // Update the overall SVG height to ensure all content is visible
@@ -1019,7 +1007,6 @@ function HousingDashboard() {
     const minHeight = SCATTER + 100; // Increased from SCATTER to SCATTER+100 to ensure enough room at bottom
     svg.attr('height', Math.max(totalHeight, minHeight));
     
-<<<<<<< HEAD
     // Add a debugging rectangle to see the actual bottom boundary of our view
     // Comment this out in production
     // svg.append('rect')
@@ -1032,10 +1019,6 @@ function HousingDashboard() {
     // Final raise so circles sit above every later element
     g.selectAll('circle').raise();
 
-=======
-    // Final raise so circles sit above every later element
-    g.selectAll('circle').raise();
->>>>>>> Martin
   }, [muniRecords]);
 
   //--------------------------------------------------------------------
@@ -1173,11 +1156,7 @@ function HousingDashboard() {
         </button>
       </div>
 
-<<<<<<< HEAD
       <div style={{ display: 'flex', gap: '18px' }}>
-=======
-      <div style={{ display: 'flex', gap: '18px', marginBottom: '40px' }}> {/* Added marginBottom */}
->>>>>>> Martin
         <svg ref={mapRef} width={MAP_W} height={MAP_H} style={{ border: '0px solid #ccc' }} />
         <svg ref={scatterRef} width={SCATTER} height={SCATTER} />
       </div>
