@@ -1,20 +1,23 @@
 {
   "files": {
-    "main.css": "/FP2-Assignment-Site/static/css/main.65e37721.css",
-    "main.js": "/FP2-Assignment-Site/static/js/main.d9d3f00a.js",
+    "main.css": "/FP2-Assignment-Site/static/css/main.28e474c2.css",
+    "main.js": "/FP2-Assignment-Site/static/js/main.a0f1b987.js",
     "static/js/453.aa1918a8.chunk.js": "/FP2-Assignment-Site/static/js/453.aa1918a8.chunk.js",
+    "static/media/laurafrost.png": "/FP2-Assignment-Site/static/media/laurafrost.a9f306a557b5244e8504.png",
+    "static/media/neryparras.png": "/FP2-Assignment-Site/static/media/neryparras.92419a3ab168b2eca562.png",
+    "static/media/michaelprentky.png": "/FP2-Assignment-Site/static/media/michaelprentky.e5f9f3d7124db16222f9.png",
     "static/media/bank-svgrepo-com.svg": "/FP2-Assignment-Site/static/media/bank-svgrepo-com.b9518804a371722105975f8574892cc0.svg",
     "static/media/houses-svgrepo-com.svg": "/FP2-Assignment-Site/static/media/houses-svgrepo-com.1f6bddb02faeccb29dbdd2a839a86ff4.svg",
     "static/media/bus-svgrepo-com.svg": "/FP2-Assignment-Site/static/media/bus-svgrepo-com.41bf67928cb2300c7260377a66368360.svg",
     "static/media/skyscraper-svgrepo-com.svg": "/FP2-Assignment-Site/static/media/skyscraper-svgrepo-com.769075da9afe79283577294dffaf3279.svg",
     "static/media/pedestrian-crossing-svgrepo-com.svg": "/FP2-Assignment-Site/static/media/pedestrian-crossing-svgrepo-com.7b48af887fef012b83bba05c8be87ec0.svg",
     "index.html": "/FP2-Assignment-Site/index.html",
-    "main.65e37721.css.map": "/FP2-Assignment-Site/static/css/main.65e37721.css.map",
-    "main.d9d3f00a.js.map": "/FP2-Assignment-Site/static/js/main.d9d3f00a.js.map",
+    "main.28e474c2.css.map": "/FP2-Assignment-Site/static/css/main.28e474c2.css.map",
+    "main.a0f1b987.js.map": "/FP2-Assignment-Site/static/js/main.a0f1b987.js.map",
     "453.aa1918a8.chunk.js.map": "/FP2-Assignment-Site/static/js/453.aa1918a8.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.65e37721.css",
-    "static/js/main.d9d3f00a.js"
+    "static/css/main.28e474c2.css",
+    "static/js/main.a0f1b987.js"
   ]
 }
