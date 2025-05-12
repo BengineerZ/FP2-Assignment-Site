@@ -16,3 +16,44 @@
   width: 800px;
 
 }
+
+.clickable {
+  color: #2273f3;               /* blue link color */
+  cursor: pointer;              /* hand cursor */
+  text-decoration: underline;  
+  font-weight: 600;             /* a bit of emphasis */
+  transition: background-color .2s ease;
+}
+
+.clickable:hover {
+  background-color: rgba(34, 115, 243, 0.1); /* subtle highlight on hover */
+}
+
+/* ===== pill-style toggle ===== */
+.pill-toggle {
+  display:inline-block;
+  padding:.45rem 1.1rem;
+  font: 500 .9rem/1.1 Georgia, serif;
+  color:#393636;
+  background:#fff8ed;
+  border:1px solid #d7d1c5;
+  border-radius:999px;
+  box-shadow:0 1px 3px rgba(0,0,0,.15);
+  cursor:pointer;
+  user-select:none;
+  transition:all .22s ease;
+}
+.pill-toggle:hover      { background:#f4e4c9; box-shadow:0 2px 6px rgba(0,0,0,.18); }
+.pill-toggle:active     { transform:translateY(1px); }
+
+.pill-toggle input      { display:none; }          /* keep checkbox invisible */
+
+/* ON state */
+.pill-toggle.on {
+  background:#4d83b3;
+  color:#fff;
+  border-color:#4d83b3;
+}
+.pill-toggle.on:hover {
+  background:#3f6e94;
+}

@@ -7,6 +7,7 @@
   justify-content: center;   /* ← centres the flex children */
   max-width: 1700px;         /* optional guard on ultrawide monitors */
   margin: 0 auto;            /* centre the row block itself */
+  position: relative;
 }
 
 /* each individual map */
@@ -14,6 +15,7 @@
   flex: 0 0 1000px;  /* fixed 800-px panes; change to 1 1 0 if you want shrink-able */
   height: 800px;
   position: relative;
+  overflow: visible;   /* allow children to draw above the canvas */
 }
 
 .race-picker               { margin: 0 auto 26px; position: relative; }
@@ -71,6 +73,62 @@
 
 .race-picker:hover::after  { transform: translateY(2px); }
    
+.map-legend {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;     /* move from left:20px to right:20px */
+  left: auto;      /* override any left */
+  width: 180px;    /* give yourself a bit more width */
+  background: rgba(255,255,255,0.95);
+  padding: 12px 16px;    /* bump up the padding */
+  font-size: 1rem;       /* slightly larger text */
+  line-height: 1.4;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  z-index: 10;           /* float above the map */
+}
+
+.map-legend > div {
+  display: flex;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.map-legend .swatch {
+  flex-shrink: 0;
+  width: 16px;    /* larger squares */
+  height: 16px;
+  margin-right: 8px;
+  border: 1px solid #999;
+}
+
+.map-legend .scale-note {
+  margin-top: 8px;
+  font-style: italic;
+  font-size: 0.9rem;
+}
+
+.map-legend .swatch.pos  { background: #4d83b3; }
+.map-legend .swatch.zero { background: #bfbfbf; }
+.map-legend .swatch.neg  { background: #e07a59; }
+.map-legend .scale-note { margin-top: 6px; font-style: italic; }
+
+.view-presets {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 999;
+  background: rgba(255,255,255,0.8);
+  padding: 6px 10px;
+  border-radius: 4px;
+  box-shadow: 0 2px 6px rgba(0,0,0,.2);
+}
+.view-presets button {
+  margin: 0 4px;
+  padding: 4px 8px;
+  font-size: 0.9rem;
+}
 
 
 /* ---------- demographic maps ---------- */
@@ -78,7 +136,7 @@
   position: absolute;
   top: 0;
   bottom: 0;
-  width: 240px;
+  width: 320px;
   background: rgba(255, 248, 237, 0.93); /* paper colour */
   padding: 14px 18px;
   font-family: "Georgia Pro", serif;
@@ -86,20 +144,44 @@
   box-shadow: 0 0 6px rgba(0,0,0,.15);
   border-left: 1px solid #bbb;
   z-index: 10;
+  display: flex;
+  flex-direction: column;
 }
 .info-card h3 { margin: 0 0 10px 0; font-style: italic; }
 .info-card .x {
   position: absolute; right: 10px; top: 8px;
   cursor: pointer; font-weight: bold;
 }
-.left-pane  {                     /* left card sits over 1st map  */
-  left:  calc(50% - 800px - 6px); /* 800 px map  +  6 px half-gap */
+
+/* header stays pinned to the top */
+.info-card-header {
+  flex: 0 0 auto;
+  position: sticky;
+  top: 0;
+  background: rgba(255, 248, 237, 0.93); /* match card bg */
+  z-index: 2;  /* above the body scroll */
+  /* optional: if you want a little bottom border line */
+  /* border-bottom: 1px solid #ccc; */
 }
-.right-pane {                     /* right card over 2nd map      */
-  left:  calc(50% + 800px + 6px - 240px); /* centre + map + gap – card-w */
+
+.info-card-header .x {
+  position: absolute;
+  right: 10px;
+  top: 6px;
 }
+
+/* now the body scrolls independently */
+.info-card-body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  background: rgba(255, 248, 237, 0.93);
+  padding: 0 18px 18px;  /* match your original padding */
+  /* avoid the scrollbar covering content */
+  padding-right: 1rem;
+}
+
 .single-pane {                     /* right card over 2nd map      */
-  left:  calc(50% + 460px + 6px - 240px); /* centre + map + gap – card-w */
+  left:  calc(50% + 460px + 6px - 300px); /* centre + map + gap – card-w */
 }
 
 .map-row { position: relative; }   /* anchor card */
