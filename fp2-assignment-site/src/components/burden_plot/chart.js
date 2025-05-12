@@ -22,7 +22,7 @@ function HousingDashboard() {
   // Layout
   //--------------------------------------------------------------------
   const MAP_W = 600;
-  const MAP_H = 560;
+  const MAP_H = 640; // Increased from 560 to 640 to accommodate tooltip at bottom
   const SCATTER = 480;
 
   //--------------------------------------------------------------------
@@ -460,6 +460,60 @@ function HousingDashboard() {
       .attr('fill', 'rgba(255, 255, 255, 0.8)')
       .attr('rx', 5)
       .attr('ry', 5);
+
+    // Add instructional tooltip to guide users through the visualization
+    // Moved to the map SVG at the bottom center
+    const tooltipX = MAP_W / 2;  // Center of map width
+    const tooltipY = MAP_H - 80; // Positioned 90px from bottom of the enlarged map
+    const tooltipGroup = svg.append('g')
+      .attr('class', 'tooltip-group')
+      .attr('transform', `translate(${tooltipX}, ${tooltipY})`);
+    
+    // Create tooltip text with instructions - centered alignment
+    const tooltipText = tooltipGroup.append('text')
+      .attr('font-size', '13px')
+      .attr('fill', '#444')
+      .style('font-style', 'italic')
+      .style('pointer-events', 'none')
+      .attr('text-anchor', 'middle'); // Center align text
+      
+    tooltipText.append('tspan')
+      .attr('x', 0) // Center aligned with parent group
+      .attr('y', 15)
+      .text("Tip: Try choosing \"No-Cause Evictions\" button,");
+      
+    tooltipText.append('tspan')
+      .attr('x', 0) // Center aligned with parent group
+      .attr('y', 30)
+      .text("selecting ZIP codes along Boston's waterfront,");
+    
+    tooltipText.append('tspan')
+      .attr('x', 0) // Center aligned with parent group
+      .attr('y', 45)
+      .text("and see how they appear in the top-right of the scatter plot —");
+      
+    tooltipText.append('tspan')
+      .attr('x', 0) // Center aligned with parent group
+      .attr('y', 60)
+      .text("showing higher investor activity and eviction rates.");
+    
+    // Get tooltip dimensions
+    const tooltipBBox = tooltipText.node().getBBox();
+    const tooltipPadding = 10;
+    
+    // Add background for the tooltip - centered on the text
+    tooltipGroup.insert('rect', 'text')
+      .attr('x', -tooltipBBox.width/2 - tooltipPadding)
+      .attr('y', 0)
+      .attr('width', tooltipBBox.width + tooltipPadding * 2)
+      .attr('height', tooltipBBox.height + tooltipPadding)
+      .attr('rx', 8)
+      .attr('ry', 8)
+      .attr('fill', 'rgba(255, 255, 230, 0.92)')
+      .attr('stroke', '#aaa')
+      .attr('stroke-width', 1)
+      .style('filter', 'drop-shadow(2px 2px 3px rgba(0,0,0,0.15))')
+      .style('pointer-events', 'none');
   }, [geo, muniRecords, metric, choropleth, mapR]);
 
   // ----- lightweight update of map highlight and label -------------
@@ -521,7 +575,7 @@ function HousingDashboard() {
     svg.style('cursor', 'crosshair');
 
     // Increase bottom margin even further to prevent text cutoff
-    const m = { t: 40, r: 30, b: 150, l: 70 };
+    const m = { t: 80, r: 30, b: 150, l: 70 }; // Increased top margin from 40 to 80 to move everything down by 40px
     const w = SCATTER - m.l - m.r;
     const h = SCATTER - m.t - m.b;
 
@@ -553,7 +607,7 @@ function HousingDashboard() {
     // Larger tick fonts
     g.selectAll('.tick text').attr('font-size', 14);
 
-    // Axis labels
+    // Axis labels - also adjust their positions due to the new top margin
     g.append('text')
       .attr('x', w / 2)
       .attr('y', h + 50)
@@ -571,7 +625,7 @@ function HousingDashboard() {
 
     g.append('text')
       .attr('x', w / 2)
-      .attr('y', -25)
+      .attr('y', -30) // Changed from -50 to -10 (40px lower)
       .attr('text-anchor', 'middle')
       .attr('font-size', 18)
       .attr('font-weight', 'bold')
@@ -772,6 +826,39 @@ function HousingDashboard() {
         lastBrushTimeRef.current = now;
         setHoverZips(new Set(tempScatterSelection));
       }
+<<<<<<< HEAD
+    });
+
+    svg.on('mouseup.scatter', function(event) {
+      if (!scatterDraggingRef.current) return;
+      dragRect.style('display', 'none');
+      const [x0, y0] = scatterDragStartRef.current;
+      const [x1, y1] = d3.pointer(event, g.node());
+      if (Math.abs(x1 - x0) < 5 && Math.abs(y1 - y0) < 5) {
+        if (event.target.tagName !== 'circle') setLockedZips([]);
+      } else {
+        const selZips = new Set();
+        muniRecords.forEach(d => {
+          const px = x(d.investorChange);
+          const py = y(d.evictions);
+          if (
+            px >= Math.min(x0, x1) && px <= Math.max(x0, x1) &&
+            py >= Math.min(y0, y1) && py <= Math.max(y0, y1)
+          ) {
+            d.zips.forEach(z => selZips.add(z));
+          }
+        });
+        setLockedZips(prev => {
+          const result = new Set(prev);
+          selZips.forEach(z => result.add(z));
+          return Array.from(result);
+        });
+      }
+      scatterDraggingRef.current = false;
+      scatterDragStartRef.current = null;
+      scatterDragEndRef.current = null;
+=======
+>>>>>>> Martin
     });
 
     svg.on('mouseup.scatter', function(event) {
@@ -804,11 +891,15 @@ function HousingDashboard() {
       scatterDragEndRef.current = null;
     });
 
-    // Add color legend for rent burden below the scatter plot
+    // Add color legend for rent burden below the scatter plot - moved down by 40px
     const legendHeight = 15;
     const legendWidth = w * 0.4;
     const legendX = (w - legendWidth) / 2 - 70;
+<<<<<<< HEAD
     const legendY = h - 230; // Increased from 65 to 80 to move it down
+=======
+    const legendY = h - 190; // Changed from h - 230 to h - 190 (40px lower)
+>>>>>>> Martin
     
     // Create gradient definition
     const defs = svg.append('defs');
@@ -840,7 +931,7 @@ function HousingDashboard() {
       .attr('stroke-width', 0.5)
       .style('pointer-events', 'none');
     
-    // Add legend title
+    // Add legend title - adjusted for new legend position
     g.append('text')
       .attr('x', legendX + legendWidth / 2)
       .attr('y', legendY - 25)
@@ -858,49 +949,47 @@ function HousingDashboard() {
       .attr('x', legendX)
       .attr('y', legendY + legendHeight + 15)
       .attr('text-anchor', 'start')
-      .attr('font-size', '12px')
+      .attr('font-size', 12)
       .text(`${costExtent[0].toFixed(1)}%`);
     
     g.append('text')
       .attr('x', legendX + legendWidth)
       .attr('y', legendY + legendHeight + 15)
       .attr('text-anchor', 'end')
-      .attr('font-size', '12px')
+      .attr('font-size', 12)
       .text(`${costExtent[1].toFixed(1)}%`);
     
     // Add a stylized text box with key message below the scatter plot
-    const messageBoxWidth = w * 0.75; // Reduced from 0.9 to keep box from being too wide
+    const messageBoxWidth = w * 0.75; 
     const messageBoxX = (w - messageBoxWidth) / 2 - 20;
-    const messageBoxY = h + 80;
+    const messageBoxY = h + 100; // Adjusted to account for the new position of the plot
     
     // Create message text group first to calculate its dimensions later
     const messageGroup = g.append('g')
       .attr('class', 'message-group')
-      .attr('transform', `translate(${messageBoxX + messageBoxWidth/2}, ${messageBoxY + 25})`); // Added more space
+      .attr('transform', `translate(${messageBoxX + messageBoxWidth/2}, ${messageBoxY + 25})`);
     
     // Add the message text with line breaks for better layout, increased font size
     const messageText = messageGroup.append('text')
       .attr('text-anchor', 'middle')
       .attr('font-size', '18px') // Increased from 14px to 18px
-      .attr('font-style', 'italic')
       .attr('fill', '#333')
-      .text("Increases in investor share of sales in Boston's");
-      
-    // Break the first line into two lines for better fit with larger font
+      .text("Investor activity in Boston's housing market");
+
     messageText.append('tspan')
       .attr('x', 0)
       .attr('dy', '1.2em')
-      .text("residential market track with increases");
-      
+      .text("is linked to rising rent burdens (rent");
+
     messageText.append('tspan')
       .attr('x', 0)
       .attr('dy', '1.2em')
-      .text("in renter cost burden (rent >30% of income) and");
-    
+      .text(">30% of income) and no-cause evictions.");
+
     messageText.append('tspan')
       .attr('x', 0)
-      .attr('dy', '1.2em') // Added more vertical space before the bold line
-      .text("no-cause eviction rates. People are being displaced.");
+      .attr('dy', '1.2em')
+      .text("People are being displaced.");
     
     // Get the bounding box of the text to size the background rectangle
     const textBBox = messageGroup.node().getBBox();
@@ -909,22 +998,28 @@ function HousingDashboard() {
     // Create styled text box with drop shadow, positioned behind the text
     messageGroup.insert('rect', 'text')
       .attr('x', -textBBox.width/2 - padding)
-      .attr('y', -textBBox.height/2 + padding/2) // Added more space at top
+      .attr('y', -textBBox.height/2 + padding/2)
       .attr('width', textBBox.width + padding*2)
-      .attr('height', textBBox.height + padding*2) // Doubled the padding for height
-      .attr('rx', 10) // Increased from 8 to 10
-      .attr('ry', 10) // Increased from 8 to 10
+      .attr('height', textBBox.height + padding*2)
+      .attr('rx', 10)
+      .attr('ry', 10)
       .attr('fill', 'rgba(250, 250, 255, 0.95)')
       .attr('stroke', '#336')
+<<<<<<< HEAD
       .attr('stroke-width', 1.5) // Increased from 1 to 1.5
       .style('filter', 'drop-shadow(3px 3px 4px rgba(0,0,0,0.25))') // Enhanced shadow
+=======
+      .attr('stroke-width', 1.5)
+      .style('filter', 'drop-shadow(3px 3px 4px rgba(0,0,0,0.25))')
+>>>>>>> Martin
       .style('pointer-events', 'none');
     
     // Update the overall SVG height to ensure all content is visible
-    const totalHeight = messageBoxY + textBBox.height + padding*2 + 50; // Increased margin from 20 to 50
-    const minHeight = SCATTER; // Ensure we don't make the SVG smaller than its original size
+    const totalHeight = messageBoxY + textBBox.height + padding*2 + 80; // Increased margin from 50 to 80
+    const minHeight = SCATTER + 100; // Increased from SCATTER to SCATTER+100 to ensure enough room at bottom
     svg.attr('height', Math.max(totalHeight, minHeight));
     
+<<<<<<< HEAD
     // Add a debugging rectangle to see the actual bottom boundary of our view
     // Comment this out in production
     // svg.append('rect')
@@ -937,6 +1032,10 @@ function HousingDashboard() {
     // Final raise so circles sit above every later element
     g.selectAll('circle').raise();
 
+=======
+    // Final raise so circles sit above every later element
+    g.selectAll('circle').raise();
+>>>>>>> Martin
   }, [muniRecords]);
 
   //--------------------------------------------------------------------
@@ -1074,7 +1173,11 @@ function HousingDashboard() {
         </button>
       </div>
 
+<<<<<<< HEAD
       <div style={{ display: 'flex', gap: '18px' }}>
+=======
+      <div style={{ display: 'flex', gap: '18px', marginBottom: '40px' }}> {/* Added marginBottom */}
+>>>>>>> Martin
         <svg ref={mapRef} width={MAP_W} height={MAP_H} style={{ border: '0px solid #ccc' }} />
         <svg ref={scatterRef} width={SCATTER} height={SCATTER} />
       </div>
