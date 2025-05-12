@@ -433,8 +433,8 @@ function FlowChart({ csvUrl = `${process.env.PUBLIC_URL}/mapc_region_residential
   useEffect(() => {
     const sim = d3.forceSimulation()
       // Use moderate .strength(0.05) for X & Y like "original"
-      .force("x", d3.forceX(clusterX).strength(0.04))
-      .force("y", d3.forceY(clusterY).strength(0.04))
+      .force("x", d3.forceX(clusterX).strength(0.08))
+      .force("y", d3.forceY(clusterY).strength(0.08))
       .force("collision", d3.forceCollide(COLLISION_RADIUS))
       // Increase damping to better match original comment about 0.2-0.3 range
       .velocityDecay(0.3)   // Increased from 0.2 to 0.3
