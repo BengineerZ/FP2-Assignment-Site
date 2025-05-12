@@ -1,7 +1,7 @@
 import React from 'react';
 import "./MinoritySection.css";
 import { Citation } from '../citations/CitationsSystem';
-import RaceElevatedMap from '../demographics_plot/RaceElevatedMap';
+import RaceElevatedMap, {flyToNeighborhood} from '../demographics_plot/RaceElevatedMap';
 // import { ReactComponent as Bus } from './images/bus-svgrepo-com.svg';
 // import { ReactComponent as Pedestrian } from './images/pedestrian-crossing-svgrepo-com.svg';
 import HelpIndicator from '../help_comp/HelpIndicator';
@@ -22,7 +22,7 @@ const MinoritySection = () => {
       </p>
       </div>
 
-      <HelpIndicator helpText="Try changing the demographs information to alter the map! Hover over or click on each region to get some helpful statistics.">
+      <HelpIndicator helpText="Try changing the demographs information to alter the map! Hover over or click on each region to get some helpful statistics, and also personal news articles that relate to the effects of rising corporate ownership in the area.">
         Click the lightbulb for help!
       </HelpIndicator>
 
@@ -35,7 +35,7 @@ const MinoritySection = () => {
       <div className='text-container'>
 
       <p>
-      Roxbury tells the story most starkly. Our plot shows the neighborhood’s Black population decreasing from 53% to 42% in a single decade, 
+      <span className="clickable" onClick={() => flyToNeighborhood("Roxbury")}>Roxbury</span> tells the story most starkly. Our plot shows the neighborhood’s Black population decreasing from 53% to 42% in a single decade, 
       at the same time Roxbury has a 22% corporate-ownership rate — the third-highest in Boston.<Citation>Homes for Profit: Speculation and Investment in Greater Boston – MAPC. MAPC. https://www.mapc.org/resource-library/homes-for-profit/#:~:text=MAPC%20has%20released%20research%20that,to%20View%20the%20Executive%20Summary.</Citation> MAPC’s analysis helps explain this overlap: 
       from 2004-2018 one in five Greater-Boston homes, and nearly one in three in communities of color, went to investors, who concentrate 
       in “low-income urban neighborhoods of color” where they can buy cheap, flip quickly, and harvest outsized profits. As our map demonstrates, 
