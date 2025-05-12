@@ -262,11 +262,7 @@ export default function AnimatedLineChart({
           .on("mouseleave", () => {
             tooltip.style("opacity", 0);
           });
-
-
-
-
-
+      
       // draw animated red lines
       const lines = g.selectAll(".line")
         .data(Array.from(nested), ([key]) => key)
