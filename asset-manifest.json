@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/FP2-Assignment-Site/static/css/main.28e474c2.css",
-    "main.js": "/FP2-Assignment-Site/static/js/main.a0f1b987.js",
+    "main.js": "/FP2-Assignment-Site/static/js/main.770c5fcc.js",
     "static/js/453.aa1918a8.chunk.js": "/FP2-Assignment-Site/static/js/453.aa1918a8.chunk.js",
     "static/media/laurafrost.png": "/FP2-Assignment-Site/static/media/laurafrost.a9f306a557b5244e8504.png",
     "static/media/neryparras.png": "/FP2-Assignment-Site/static/media/neryparras.92419a3ab168b2eca562.png",
@@ -13,11 +13,11 @@
     "static/media/pedestrian-crossing-svgrepo-com.svg": "/FP2-Assignment-Site/static/media/pedestrian-crossing-svgrepo-com.7b48af887fef012b83bba05c8be87ec0.svg",
     "index.html": "/FP2-Assignment-Site/index.html",
     "main.28e474c2.css.map": "/FP2-Assignment-Site/static/css/main.28e474c2.css.map",
-    "main.a0f1b987.js.map": "/FP2-Assignment-Site/static/js/main.a0f1b987.js.map",
+    "main.770c5fcc.js.map": "/FP2-Assignment-Site/static/js/main.770c5fcc.js.map",
     "453.aa1918a8.chunk.js.map": "/FP2-Assignment-Site/static/js/453.aa1918a8.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.28e474c2.css",
-    "static/js/main.a0f1b987.js"
+    "static/js/main.770c5fcc.js"
   ]
 }
